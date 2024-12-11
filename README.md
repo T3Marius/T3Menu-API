@@ -69,3 +69,6 @@ settings:
 # Zoom
 # Tab
 ```
+
+# Video
+<blockquote class="imgur-embed-pub" lang="en" data-id="a/vwwvn7B"  ><a href="//imgur.com/a/vwwvn7B">T3Menu API VIDEO</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
