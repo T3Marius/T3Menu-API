@@ -35,7 +35,7 @@ public class MenuTest : BasePlugin
         if (manager == null)
             return;
 
-        //create menu
+        // create menu
         var mainMenu = manager.CreateMenu("Menu Test", isSubMenu: false); // you can add freezePlayer, hasSound too but you can disable them from config directly
 
         // normal option
@@ -55,17 +55,17 @@ public class MenuTest : BasePlugin
             }
         });
 
-        //slider option // you can leave display: empty if you don't want to show anything but the slider.
+        // slider option | you can leave display: empty if you don't want to show anything but the slider.
         mainMenu.AddSliderOption(display: "", minValue: 0, maxValue: 10, step: 1, defaultValue: 0, onSlide: (p, option) =>
         {
             int value = option.SliderValue; // the value player selects
             player.PrintToChat($"Value: {value}"); // for now slider only works with INT, Values.
         });
 
-        //text option
+        // text option
         mainMenu.AddTextOption("<font color='#FFFF00'>THIS IS A TEXT OPTION</font>"); // you can set color like that for example now is yellow
 
-        //creating sub menu
+        // creating sub menu
         mainMenu.Add("Sub Menu", (p, option) => // you need to add it as an option to mainMenu first
         {
             var subMenu = manager.CreateMenu("Sub Menu", isSubMenu: true);
