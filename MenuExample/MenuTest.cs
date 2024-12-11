@@ -10,7 +10,7 @@ public class MenuTest : BasePlugin
 {
     public override string ModuleAuthor => "T3Marius";
     public override string ModuleName => "MenuExample";
-    public override string ModuleVersion => "Test";
+    public override string ModuleVersion => "1.0";
 
     public IT3MenuManager? MenuManager;
 
