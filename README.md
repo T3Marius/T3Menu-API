@@ -71,4 +71,4 @@ settings:
 ```
 
 # Video
-<blockquote class="imgur-embed-pub" lang="en" data-id="a/vwwvn7B"  ><a href="//imgur.com/a/vwwvn7B">T3Menu API VIDEO</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
+[<blockquote class="imgur-embed-pub" lang="en" data-id="a/vwwvn7B"  ><a href="//imgur.com/a/vwwvn7B">T3Menu API VIDEO</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>](https://imgur.com/ufu2dI9)
