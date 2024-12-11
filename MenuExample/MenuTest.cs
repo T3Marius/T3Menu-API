@@ -9,7 +9,7 @@ namespace MenuTest;
 public class MenuTest : BasePlugin
 {
     public override string ModuleAuthor => "T3Marius";
-    public override string ModuleName => "MenuTest";
+    public override string ModuleName => "MenuExample";
     public override string ModuleVersion => "Test";
 
     public IT3MenuManager? MenuManager;
