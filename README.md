@@ -48,6 +48,10 @@ settings:
 # Attack3
 # Bullrush
 # Cancel
+
+https://github.com/user-attachments/assets/a8ac4c8d-4aee-4544-bd2f-5ae7ed230ea6
+
+
 # Duck
 # Grenade1
 # Grenade2
@@ -71,4 +75,4 @@ settings:
 ```
 
 # Video
-[<blockquote class="imgur-embed-pub" lang="en" data-id="a/vwwvn7B"  ><a href="//imgur.com/a/vwwvn7B">T3Menu API VIDEO</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>](https://imgur.com/ufu2dI9)
+[https://imgur.com/ufu2dI9](https://github.com/user-attachments/assets/a8ac4c8d-4aee-4544-bd2f-5ae7ed230ea6)
