@@ -160,6 +160,6 @@ Credits to:
 
  @interesting , took example from him with classes: https://github.com/Interesting-exe
 
- @KitsuneLab Developments, inspired from his menu style: https://github.com/KitsuneLab-Development
+ @KitsuneLab Developments, inspired from their menu style: https://github.com/KitsuneLab-Development
 # Video
 [https://imgur.com/ufu2dI9](https://github.com/user-attachments/assets/a8ac4c8d-4aee-4544-bd2f-5ae7ed230ea6)
