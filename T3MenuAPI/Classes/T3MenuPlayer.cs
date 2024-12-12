@@ -33,7 +33,7 @@ namespace T3MenuAPI
             CurrentChoice = MainMenu.Options.First;
             MenuStart = CurrentChoice;
 
-            if (Controls_Config.Settings.FreezePlayersInMenu && player != null)
+            if (MainMenu.FreezePlayer && player != null)
             {
                 player.Freeze();
             }
@@ -62,12 +62,12 @@ namespace T3MenuAPI
             CurrentChoice = menu.Options.First;
             MenuStart = CurrentChoice;
 
-            if (Controls_Config.Settings.FreezePlayersInMenu && player != null)
+            if (CurrentMenu.FreezePlayer && player != null)
             {
                 player.Freeze();
             }
 
-            if (Controls_Config.Settings.EnableMenuSounds && player != null)
+            if (CurrentMenu.HasSound && player != null)
             {
                 player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
             }
@@ -95,7 +95,7 @@ namespace T3MenuAPI
             CurrentChoice = CurrentMenu?.Options.First;
             MenuStart = CurrentChoice;
 
-            if (Controls_Config.Settings.EnableMenuSounds == true && player != null)
+            if (MainMenu!.HasSound && player != null)
             {
                 player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
             }
@@ -113,7 +113,7 @@ namespace T3MenuAPI
             MenuStart = CurrentChoice;
             VisibleOptions = 4;
 
-            if (Controls_Config.Settings.EnableMenuSounds && player != null)
+            if (CurrentMenu.HasSound && player != null)
             {
                 player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
             }
@@ -143,7 +143,7 @@ namespace T3MenuAPI
         {
             if (player != null && CurrentChoice?.Value != null)
             {
-                if (Controls_Config.Settings.EnableMenuSounds == true)
+                if (MainMenu!.HasSound)
                 {
                     player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
                 }
@@ -168,7 +168,7 @@ namespace T3MenuAPI
                     MenuStart = MenuStart.Previous;
                 }
 
-                if (Controls_Config.Settings.EnableMenuSounds == true && player != null)
+                if (MainMenu!.HasSound && player != null)
                 {
                     player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
                 }
@@ -198,7 +198,7 @@ namespace T3MenuAPI
                     MenuStart = MenuStart?.Next;
                 }
 
-                if (Controls_Config.Settings.EnableMenuSounds == true && player != null)
+                if (MainMenu!.HasSound && player != null)
                 {
                     player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
                 }
@@ -215,7 +215,7 @@ namespace T3MenuAPI
                 sliderOption.SliderValue = Math.Max(sliderOption.SliderValue - sliderOption.Step, sliderOption.MinValue);
                 sliderOption.OptionDisplay = $"{sliderOption.OptionDisplay?.Split(':')[0]}: {sliderOption.SliderValue}";
 
-                if (Controls_Config.Settings.EnableMenuSounds && player != null)
+                if (CurrentMenu!.HasSound && player != null)
                 {
                     player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
                 }
@@ -232,7 +232,7 @@ namespace T3MenuAPI
                 sliderOption.SliderValue = Math.Min(sliderOption.SliderValue + sliderOption.Step, sliderOption.MaxValue);
                 sliderOption.OptionDisplay = $"{sliderOption.OptionDisplay?.Split(':')[0]}: {sliderOption.SliderValue}";
 
-                if (Controls_Config.Settings.EnableMenuSounds && player != null)
+                if (CurrentMenu!.HasSound && player != null)
                 {
                     player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
                 }

@@ -30,8 +30,6 @@ public static class Controls_Config
     public class Config_Settings
     {
         public bool ShowDeveloperInfo { get; set; } = true;
-        public bool FreezePlayersInMenu { get; set; } = true;
-        public bool EnableMenuSounds { get; set; } = true;
     }
 
     public static Controls_Info ControlsInfo { get; private set; } = new Controls_Info();
