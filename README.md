@@ -6,7 +6,7 @@ The menu controls are fully confiugarble from config located at **counterstrikes
 After you extract the T3Menu-API folder, Drag&Drop addons folder into game/csgo and you're good to go.
 
 # Creating Menu Tutorial
-```js
+```C#
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Core.Capabilities;
