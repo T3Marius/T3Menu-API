@@ -13,6 +13,10 @@ public interface IT3Menu
 
     LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice);
     LinkedListNode<IT3Option> AddBoolOption(string display, bool defaultValue = false, Action<CCSPlayerController, IT3Option>? onToggle = null);
-    LinkedListNode<IT3Option> AddTextOption(string display);
-    LinkedListNode<IT3Option> AddSliderOption(string display, int minValue, int maxValue, int step, int defaultValue, Action<CCSPlayerController, IT3Option> onSlide);
+    void AddTextOption(string display);
+    LinkedListNode<IT3Option> AddSliderOption(
+     string display,
+     List<int> customValues,
+     int defaultValue,
+     Action<CCSPlayerController, IT3Option>? onSlide = null);
 }

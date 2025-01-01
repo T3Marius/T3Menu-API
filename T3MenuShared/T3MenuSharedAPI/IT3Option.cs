@@ -15,7 +15,6 @@ public interface IT3Option
     int Index { get; set; }
     OptionType Type { get; set; }
     int SliderValue { get; set; }
-    int MinValue { get; set; }
-    int MaxValue { get; set; }
-    int Step { get; set; }
+    List<int>? CustomValues { get; set; }
+    Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
 }
