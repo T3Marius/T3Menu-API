@@ -346,19 +346,22 @@ namespace T3MenuAPI
                 builder.AppendLine("<br>");
                 current = current.Next;
             }
-
-            builder.AppendLine("<br>");
-
-            // Add developer info if enabled
+            if (current != null)
+            {
+                builder.AppendLine("<img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''><br>");
+            }
+            if (current == null)
+            {
+                builder.AppendLine("<br>");
+            }
             if (Controls_Config.Settings.ShowDeveloperInfo)
             {
+                // developer info
                 string developerInfo = "<font class='fontSize-s' color='white'>Developed by <font color='#ff3333'>T3Marius</font></font>";
                 builder.Append(developerInfo);
+                builder.AppendLine("<br>");
             }
-
-            builder.AppendLine("<br>");
-
-            // Add controls information
+            // control info
             string controlsInfo;
             if (CurrentMenu.IsSubMenu)
             {
@@ -374,6 +377,5 @@ namespace T3MenuAPI
             // Print the updated HTML to the player's screen
             player.PrintToCenterHtml(builder.ToString());
         }
-
     }
 }
