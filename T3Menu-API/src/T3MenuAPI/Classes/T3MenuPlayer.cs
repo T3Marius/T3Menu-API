@@ -348,7 +348,7 @@ namespace T3MenuAPI
             }
             if (current != null)
             {
-                builder.AppendLine("<img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''><br>");
+                builder.AppendLine("<img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif'> <img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif' class=''><br>");
             }
             if (current == null)
             {
