@@ -160,6 +160,6 @@ Credits to:
 
 [@ssypchenko](https://github.com/ssypchenko), arrows ideas from him.
 
- @KitsuneLab Developments, inspired from their menu style: https://github.com/KitsuneLab-Development
+ [@KitsuneLab Developments](https://github.com/KitsuneLab-Development), inspired from their menu style
 # Video
 [https://imgur.com/ufu2dI9](https://github.com/user-attachments/assets/a8ac4c8d-4aee-4544-bd2f-5ae7ed230ea6)
