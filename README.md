@@ -132,9 +132,6 @@ settings:
 # Bullrush
 # Cancel
 
-https://github.com/user-attachments/assets/a8ac4c8d-4aee-4544-bd2f-5ae7ed230ea6
-
-
 # Duck
 # Grenade1
 # Grenade2
