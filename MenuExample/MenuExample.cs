@@ -55,11 +55,17 @@ public class MenuTest : BasePlugin
             }
         });
 
-        // slider option | you can leave display: empty if you don't want to show anything but the slider.
-        mainMenu.AddSliderOption(display: "", minValue: 0, maxValue: 10, step: 1, defaultValue: 0, onSlide: (p, option) =>
+        List<object> numbers = new List<object> { 10, 20, 30 };
+        mainMenu.AddSliderOption(display: "", customValues: numbers, defaultValue: 0, onSlide: (p, option) =>
         {
-            int value = option.SliderValue; // the value player selects
-            player.PrintToChat($"Value: {value}"); // for now slider only works with INT, Values.
+            int value = (int)option.SliderValue!;
+            player.PrintToChat($"Value: {value}");
+        });
+        List<object> text = new List<object> { "test", "another test", "hello" };
+        mainMenu.AddSliderOption(display: "", customValues: text, defaultValue: 0, onSlide: (p, option) =>
+        {
+            string text = (string)option.SliderValue!;
+            player.PrintToChat($"Value: {text}");
         });
 
         // text option
