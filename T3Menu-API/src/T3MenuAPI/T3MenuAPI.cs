@@ -1,11 +1,8 @@
 ﻿using CounterStrikeSharp.API.Core;
-using T3MenuAPI.Classes;
 using static CounterStrikeSharp.API.Core.Listeners;
-using static T3MenuAPI.Controls_Config;
 using T3MenuSharedApi;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Modules.Commands;
 using System.Collections.Concurrent;
 
 namespace T3MenuAPI;
@@ -47,13 +44,12 @@ public class Buttons
 public class T3MenuAPI : BasePlugin
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.3";
+    public override string ModuleVersion => "1.0.4";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
     public static PluginCapability<IT3MenuManager> T3MenuManagerCapability = new("t3menu:manager");
 
-    // Button Hold States for handling fast scrolling
     private static readonly ConcurrentDictionary<CCSPlayerController, (PlayerButtons Button, DateTime LastPress, int RepeatCount)> ButtonHoldState = new();
     private const float InitialDelay = 0.5f;
     private const float RepeatDelay = 0.1f;
@@ -107,7 +103,10 @@ public class T3MenuAPI : BasePlugin
 
         foreach (var player in Players.Values.Where(p => p.MainMenu != null))
         {
-            player.UpdateCenterHtml();
+            Server.NextFrame(() =>
+            {
+                player.UpdateCenterHtml();
+            });
 
             var controller = player.player!;
             PlayerButtons currentButtons = controller.Buttons;
@@ -190,7 +189,11 @@ public class T3MenuAPI : BasePlugin
         }
         else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.ExitButton, out var exitButton) && (button & exitButton) != 0)
         {
-            player.CloseMenu();
+            Server.NextFrame(() =>
+            {
+                player.OpenMainMenu(null);
+                player.CloseMenu();
+            });
             buttonHandled = true;
         }
 

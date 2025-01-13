@@ -15,8 +15,8 @@ public interface IT3Menu
     LinkedListNode<IT3Option> AddBoolOption(string display, bool defaultValue = false, Action<CCSPlayerController, IT3Option>? onToggle = null);
     void AddTextOption(string display);
     LinkedListNode<IT3Option> AddSliderOption(
-     string display,
-     List<int> customValues,
-     int defaultValue,
-     Action<CCSPlayerController, IT3Option>? onSlide = null);
+        string display,
+        List<object> customValues,
+        object defaultValue,
+        Action<CCSPlayerController, IT3Option>? onSlide = null);
 }

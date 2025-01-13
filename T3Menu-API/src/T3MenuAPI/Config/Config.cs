@@ -15,6 +15,9 @@ public static class Controls_Config
         public string Select { get; set; } = "E";
         public string Back { get; set; } = "Q";
         public string Exit { get; set; } = "ESC";
+
+        public string LeftArrow { get; set; } = "◄";
+        public string RightArrow { get; set; } = "►";
     }
 
     public class MenuButtons

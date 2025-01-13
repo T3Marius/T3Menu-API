@@ -119,10 +119,7 @@ namespace T3MenuAPI
                 player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
             }
 
-            Server.NextFrame(() =>
-            {
-                UpdateCenterHtml();
-            });
+            UpdateCenterHtml();
         }
 
         public void CloseMenu()
@@ -139,13 +136,9 @@ namespace T3MenuAPI
             if (player != null)
             {
                 player.UnFreeze();
-                Server.NextFrame(() =>
-                {
-                    player.PrintToCenterHtml(" ");
-                });
+                OpenMainMenu(null);
             }
         }
-
         public void Choose()
         {
             if (player != null && CurrentChoice?.Value != null)
@@ -160,15 +153,11 @@ namespace T3MenuAPI
 
             UpdateCenterHtml();
         }
-
         public void ScrollUp()
         {
             if (CurrentChoice?.Previous != null)
             {
-                do
-                {
-                    CurrentChoice = CurrentChoice.Previous;
-                } while (CurrentChoice?.Value?.Type == OptionType.Text && CurrentChoice?.Previous != null);
+                CurrentChoice = CurrentChoice.Previous;
 
                 if (CurrentChoice == MenuStart?.Previous && MenuStart?.Previous != null)
                 {
@@ -183,15 +172,11 @@ namespace T3MenuAPI
                 UpdateCenterHtml();
             }
         }
-
         public void ScrollDown()
         {
             if (CurrentChoice?.Next != null)
             {
-                do
-                {
-                    CurrentChoice = CurrentChoice.Next;
-                } while (CurrentChoice?.Value?.Type == OptionType.Text && CurrentChoice?.Next != null);
+                CurrentChoice = CurrentChoice.Next;
 
                 var lastVisible = MenuStart;
 
@@ -214,6 +199,7 @@ namespace T3MenuAPI
             }
         }
 
+
         public void SlideLeft()
         {
             if (CurrentChoice?.Value?.Type == OptionType.Slider)
@@ -221,7 +207,7 @@ namespace T3MenuAPI
                 T3Option sliderOption = (T3Option)CurrentChoice.Value;
 
                 // Move to the previous value in CustomValues
-                int currentIndex = sliderOption.CustomValues!.IndexOf(sliderOption.SliderValue);
+                int currentIndex = sliderOption.CustomValues!.IndexOf(sliderOption.SliderValue!);
                 if (currentIndex > 0) // Ensure we don't go out of bounds
                 {
                     sliderOption.SliderValue = sliderOption.CustomValues[currentIndex - 1];
@@ -245,7 +231,7 @@ namespace T3MenuAPI
                 T3Option sliderOption = (T3Option)CurrentChoice.Value;
 
                 // Move to the next value in CustomValues
-                int currentIndex = sliderOption.CustomValues!.IndexOf(sliderOption.SliderValue);
+                int currentIndex = sliderOption.CustomValues!.IndexOf(sliderOption.SliderValue!);
                 if (currentIndex < sliderOption.CustomValues.Count - 1) // Ensure we don't go out of bounds
                 {
                     sliderOption.SliderValue = sliderOption.CustomValues[currentIndex + 1];
@@ -284,15 +270,13 @@ namespace T3MenuAPI
                 node = node.Next;
             }
 
-            // Add menu title and item count
             builder.Append($"<b><font color='red' class='fontSize-m'>{CurrentMenu.Title}</font></b> <font color='yellow' class='fontSize-sm'>{currentIndex + 1}</font>/<font color='orange' class='fontSize-sm'>{totalItems}</font>");
             builder.AppendLine("<br>");
 
-            string leftArrow = "◄";
-            string rightArrow = "►";
+            string leftArrow = Controls_Config.ControlsInfo.LeftArrow;
+            string rightArrow = Controls_Config.ControlsInfo.RightArrow;
             var current = MenuStart;
 
-            // Render visible options
             for (int i = 0; i < VisibleOptions && current != null; i++)
             {
                 string color = (current == CurrentChoice) ? "#9acd32" : "white";
@@ -301,44 +285,27 @@ namespace T3MenuAPI
 
                 if (current.Value?.Type == OptionType.Text)
                 {
-                    // Render text options
-                    optionText = $"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>";
+                    optionText = $"<font class='fontSize-m'>{optionDisplay}</font>";
                 }
                 else if (current.Value?.Type == OptionType.Slider)
                 {
-                    // Render slider options using CustomValues
                     T3Option sliderOption = (T3Option)current.Value;
-                    var sliderValues = new List<string>();
+                    var customValues = sliderOption.CustomValues!;
+                    int currentIndexInValues = customValues.IndexOf(sliderOption.SliderValue!);
 
-                    // Include neighboring values for display
-                    int currentIndexInValues = sliderOption.CustomValues!.IndexOf(sliderOption.SliderValue);
-                    int startIndex = Math.Max(0, currentIndexInValues - 1); // At least one before
-                    int endIndex = Math.Min(sliderOption.CustomValues.Count - 1, currentIndexInValues + 1); // At least one after
+                    string sliderValues = string.Join(" ", customValues.Select((value, index) =>
+                        index == currentIndexInValues
+                            ? $"<b><font color='#00FF00'>{value}</font></b>"
+                            : $"<font color='#FFFF00'>{value}</font>"));
 
-                    for (int j = startIndex; j <= endIndex; j++)
-                    {
-                        int value = sliderOption.CustomValues[j];
-                        if (value == sliderOption.SliderValue)
-                        {
-                            sliderValues.Add($"<b><font color='#ffd700'>{value}</font></b>");
-                        }
-                        else
-                        {
-                            sliderValues.Add($"<font color='white'>{value}</font>");
-                        }
-                    }
-
-                    string sliderDisplay = string.Join(", ", sliderValues);
-                    optionText = $"<font color='yellow' class='fontSize-m'>[{sliderDisplay}]</font>";
+                    optionText = $"<font color='#FFFF00'>◄</font> <font color='#FFFFFF'>[</font> {sliderValues} <font color='#FFFFFF'>]</font> <font color='#FFFF00'>►</font>";
                 }
                 else if (current == CurrentChoice)
                 {
-                    // Highlight current choice
                     optionText = $"<b><font color='yellow'>{rightArrow}[</font> <font color='{color}' class='fontSize-m'>{optionDisplay}</font> <font color='yellow'>]{leftArrow}</font></b>";
                 }
                 else
                 {
-                    // Render normal options
                     optionText = $"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>";
                 }
 
@@ -348,7 +315,7 @@ namespace T3MenuAPI
             }
             if (current != null)
             {
-                builder.AppendLine("<img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif'> <img src='https://raw.githubusercontent.com/T3Marius/T3Menu-API/refs/heads/main/T3Menu-API/Resources/arrow.gif' class=''><br>");
+                builder.AppendLine("<img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''><br>");
             }
             if (current == null)
             {
