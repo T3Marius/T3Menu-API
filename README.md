@@ -107,6 +107,8 @@ controlsInfo:
   select: "[E]"
   back: "[SHIFT]"
   exit: "[R]"
+  leftArrow: "◄"
+  rightArrow: "►"
 
 menuButtons:
   scrollUpButton: "W"
