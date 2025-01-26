@@ -8,29 +8,25 @@ public class T3Menu : IT3Menu
     public LinkedList<IT3Option>? Prev { get; set; } = null;
     public bool FreezePlayer { get; set; } = true;
     public bool HasSound { get; set; } = true;
+    public IT3Menu? ParentMenu { get; set; } = null;
     public bool IsSubMenu { get; set; } = false;
     public bool showDeveloper { get; set; } = true;
-    public IT3Menu? ParentMenu { get; set; } = null;
-
     public Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
-
-    public LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice)
+    public int LastSelectedIndex { get; set; } = 0;
+    public LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false)
     {
-        if (Options == null)
-            Options = new();
-
         T3Option newOption = new()
         {
-            OptionDisplay = display,
-            OnChoose = onChoice,
+            OptionDisplay = isDisabled ? $"<font color='grey'>{display}</font>" : display,
+            OnChoose = isDisabled ? null! : onChoice,
             Index = Options.Count,
             Parent = this,
-            Type = OptionType.Button
+            Type = OptionType.Button,
+            IsDisabled = isDisabled
         };
 
         return Options.AddLast(newOption);
     }
-
     public LinkedListNode<IT3Option> AddBoolOption(string display, bool defaultValue = false, Action<CCSPlayerController, IT3Option>? onToggle = null)
     {
         if (Options == null)
@@ -105,10 +101,9 @@ public class T3Menu : IT3Menu
 
                 sliderOption.SliderValue = customValuesList[newIndex];
 
-                // Update OptionDisplay dynamically
                 sliderOption.OptionDisplay = !string.IsNullOrWhiteSpace(display)
-                    ? $"{display}: {sliderOption.SliderValue}" // Show display and value
-                    : null; // Set OptionDisplay to null when display is empty
+                    ? $"{display}: {sliderOption.SliderValue}"
+                    : null;
 
                 onSlide?.Invoke(player, sliderOption);
             }
@@ -116,9 +111,4 @@ public class T3Menu : IT3Menu
 
         return Options.AddLast(newSliderOption);
     }
-
-
-
-
-
 }

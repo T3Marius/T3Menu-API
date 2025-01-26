@@ -6,6 +6,7 @@ public enum OptionType
     Bool,
     Text,
     Slider,
+    Input,
 }
 public interface IT3Option
 {
@@ -14,8 +15,8 @@ public interface IT3Option
     Action<CCSPlayerController, IT3Option> OnChoose { get; set; }
     int Index { get; set; }
     OptionType Type { get; set; }
-    object? SliderValue { get; set; } // Supports any type for the slider value
-    List<object>? CustomValues { get; set; } // Supports any type for custom values
-
+    public bool IsDisabled { get; set; }
+    object? SliderValue { get; set; }
+    List<object>? CustomValues { get; set; }
     Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
 }

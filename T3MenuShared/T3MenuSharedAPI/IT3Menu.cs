@@ -11,7 +11,8 @@ public interface IT3Menu
     bool showDeveloper { get; set; }
     IT3Menu? ParentMenu { get; set; }
 
-    LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice);
+    LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false);
+
     LinkedListNode<IT3Option> AddBoolOption(string display, bool defaultValue = false, Action<CCSPlayerController, IT3Option>? onToggle = null);
     void AddTextOption(string display);
     LinkedListNode<IT3Option> AddSliderOption(
@@ -19,4 +20,6 @@ public interface IT3Menu
         List<object> customValues,
         object defaultValue,
         Action<CCSPlayerController, IT3Option>? onSlide = null);
+
+
 }

@@ -44,12 +44,13 @@ public class Buttons
 public class T3MenuAPI : BasePlugin
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.4";
+    public override string ModuleVersion => "1.0.5";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
     public static PluginCapability<IT3MenuManager> T3MenuManagerCapability = new("t3menu:manager");
-
+    public static T3MenuAPI Instance { get; set; } = new T3MenuAPI();
+    public static readonly Dictionary<CCSPlayerController, T3Menu> ActiveMenus = new();
     private static readonly ConcurrentDictionary<CCSPlayerController, (PlayerButtons Button, DateTime LastPress, int RepeatCount)> ButtonHoldState = new();
     private const float InitialDelay = 0.5f;
     private const float RepeatDelay = 0.1f;
@@ -96,7 +97,6 @@ public class T3MenuAPI : BasePlugin
             }
         }
     }
-
     public void OnTick()
     {
         DateTime now = DateTime.Now;
@@ -145,7 +145,6 @@ public class T3MenuAPI : BasePlugin
                 ButtonHoldState.TryRemove(controller, out _);
             }
 
-            // Update the player's previous button state
             if (buttonHandled)
             {
                 player.Buttons = currentButtons;
@@ -192,7 +191,6 @@ public class T3MenuAPI : BasePlugin
             Server.NextFrame(() =>
             {
                 player.OpenMainMenu(null);
-                player.CloseMenu();
             });
             buttonHandled = true;
         }

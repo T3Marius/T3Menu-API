@@ -141,11 +141,11 @@ namespace T3MenuAPI
         }
         public void Choose()
         {
-            if (player != null && CurrentChoice?.Value != null)
+            if (player != null && CurrentChoice?.Value != null && !CurrentChoice.Value.IsDisabled)
             {
                 if (MainMenu!.HasSound)
                 {
-                    player.ExecuteClientCommand("play Ui/buttonrollover.vsnd_c");
+                    player.ExecuteClientCommand($"play {Controls_Config.Sounds.Choose}");
                 }
 
                 CurrentChoice.Value.OnChoose.Invoke(player, CurrentChoice.Value);
@@ -153,33 +153,65 @@ namespace T3MenuAPI
 
             UpdateCenterHtml();
         }
+
         public void ScrollUp()
         {
-            if (CurrentChoice?.Previous != null)
+            LinkedListNode<IT3Option>? nextChoice = CurrentChoice?.Previous;
+
+            // Skip disabled options
+            while (nextChoice != null && nextChoice.Value.IsDisabled)
             {
-                CurrentChoice = CurrentChoice.Previous;
+                nextChoice = nextChoice.Previous;
+            }
+
+            if (nextChoice != null)
+            {
+                CurrentChoice = nextChoice;
 
                 if (CurrentChoice == MenuStart?.Previous && MenuStart?.Previous != null)
                 {
                     MenuStart = MenuStart.Previous;
                 }
-
-                if (MainMenu!.HasSound && player != null)
+            }
+            else
+            {
+                // Wrap around to the last option, skipping disabled ones
+                CurrentChoice = CurrentMenu?.Options.Last;
+                while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
                 {
-                    player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
+                    CurrentChoice = CurrentChoice.Previous;
                 }
 
-                UpdateCenterHtml();
+                MenuStart = CurrentChoice;
+                for (int i = 0; i < VisibleOptions - 1 && MenuStart?.Previous != null; i++)
+                {
+                    MenuStart = MenuStart.Previous;
+                }
             }
+
+            if (MainMenu!.HasSound && player != null)
+            {
+                player.ExecuteClientCommand($"play {Controls_Config.Sounds.ScrollUp}");
+            }
+
+            UpdateCenterHtml();
         }
+
         public void ScrollDown()
         {
-            if (CurrentChoice?.Next != null)
+            LinkedListNode<IT3Option>? nextChoice = CurrentChoice?.Next;
+
+            // Skip disabled options
+            while (nextChoice != null && nextChoice.Value.IsDisabled)
             {
-                CurrentChoice = CurrentChoice.Next;
+                nextChoice = nextChoice.Next;
+            }
+
+            if (nextChoice != null)
+            {
+                CurrentChoice = nextChoice;
 
                 var lastVisible = MenuStart;
-
                 for (int i = 0; i < VisibleOptions - 1 && lastVisible?.Next != null; i++)
                 {
                     lastVisible = lastVisible.Next;
@@ -189,16 +221,26 @@ namespace T3MenuAPI
                 {
                     MenuStart = MenuStart?.Next;
                 }
-
-                if (MainMenu!.HasSound && player != null)
+            }
+            else
+            {
+                // Wrap around to the first option, skipping disabled ones
+                CurrentChoice = CurrentMenu?.Options.First;
+                while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
                 {
-                    player.ExecuteClientCommand("play Ui/buttonclick.vsnd_c");
+                    CurrentChoice = CurrentChoice.Next;
                 }
 
-                UpdateCenterHtml();
+                MenuStart = CurrentChoice;
             }
-        }
 
+            if (MainMenu!.HasSound && player != null)
+            {
+                player.ExecuteClientCommand($"play {Controls_Config.Sounds.ScrollDown}");
+            }
+
+            UpdateCenterHtml();
+        }
 
         public void SlideLeft()
         {
@@ -275,15 +317,22 @@ namespace T3MenuAPI
 
             string leftArrow = Controls_Config.ControlsInfo.LeftArrow;
             string rightArrow = Controls_Config.ControlsInfo.RightArrow;
+            string leftBracket = Controls_Config.ControlsInfo.LeftBracket;
+            string rightBracket = Controls_Config.ControlsInfo.RightBracket;
             var current = MenuStart;
 
             for (int i = 0; i < VisibleOptions && current != null; i++)
             {
-                string color = (current == CurrentChoice) ? "#9acd32" : "white";
+                string color = (current == CurrentChoice && !current.Value!.IsDisabled) ? "#9acd32" : "white";
                 string optionDisplay = current.Value?.OptionDisplay ?? "";
                 string optionText;
 
-                if (current.Value?.Type == OptionType.Text)
+                if (current.Value!.IsDisabled)
+                {
+                    // Display disabled options in grey
+                    optionText = $"<font color='grey' class='fontSize-m'>{optionDisplay}</font>";
+                }
+                else if (current.Value?.Type == OptionType.Text)
                 {
                     optionText = $"<font class='fontSize-m'>{optionDisplay}</font>";
                 }
@@ -298,11 +347,11 @@ namespace T3MenuAPI
                             ? $"<b><font color='#00FF00'>{value}</font></b>"
                             : $"<font color='#FFFF00'>{value}</font>"));
 
-                    optionText = $"<font color='#FFFF00'>◄</font> <font color='#FFFFFF'>[</font> {sliderValues} <font color='#FFFFFF'>]</font> <font color='#FFFF00'>►</font>";
+                    optionText = $"<font color='#FFFF00'>{leftArrow}</font> <font color='#FFFFFF'>{rightBracket}</font> {sliderValues} <font color='#FFFFFF'>{leftBracket}</font> <font color='#FFFF00'>{rightArrow}</font>";
                 }
                 else if (current == CurrentChoice)
                 {
-                    optionText = $"<b><font color='yellow'>{rightArrow}[</font> <font color='{color}' class='fontSize-m'>{optionDisplay}</font> <font color='yellow'>]{leftArrow}</font></b>";
+                    optionText = $"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{optionDisplay}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>";
                 }
                 else
                 {
@@ -313,6 +362,7 @@ namespace T3MenuAPI
                 builder.AppendLine("<br>");
                 current = current.Next;
             }
+
             if (current != null)
             {
                 builder.AppendLine("<img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''> <img src='https://raw.githubusercontent.com/ssypchenko/GG1MapChooser/main/Resources/arrow.gif' class=''><br>");
@@ -340,9 +390,8 @@ namespace T3MenuAPI
             }
 
             builder.Append(controlsInfo);
-
-            // Print the updated HTML to the player's screen
             player.PrintToCenterHtml(builder.ToString());
         }
+
     }
 }
