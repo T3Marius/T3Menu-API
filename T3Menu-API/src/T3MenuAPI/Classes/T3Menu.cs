@@ -34,7 +34,7 @@ public class T3Menu : IT3Menu
 
         T3Option newBoolOption = new()
         {
-            OptionDisplay = $"{display}: {(defaultValue ? "<font color='green'>✔</font>" : "<font color='red'>❌</font>")}",
+            OptionDisplay = $"{display}: {(defaultValue ? "[<font color='green'>✔</font>]" : "[<font color='red'>❌</font>]")}",
             Index = Options.Count,
             Parent = this,
             Type = OptionType.Bool,
@@ -43,7 +43,7 @@ public class T3Menu : IT3Menu
                 if (option is T3Option boolOption)
                 {
                     bool isDisabled = boolOption.OptionDisplay!.Contains("❌");
-                    boolOption.OptionDisplay = $"{display}: {(isDisabled ? "<font color='green'>✔</font>" : "<font color='red'>❌</font>")}";
+                    boolOption.OptionDisplay = $"{display}: {(isDisabled ? "[<font color='green'>✔</font>]" : "[<font color='red'>❌</font>]")}";
                     onToggle?.Invoke(player, boolOption);
                 }
             }
@@ -52,7 +52,7 @@ public class T3Menu : IT3Menu
         return Options.AddLast(newBoolOption);
     }
 
-    public void AddTextOption(string display)
+    public void AddTextOption(string display, bool selectable = false)
     {
         if (Options == null)
             Options = new();
@@ -61,7 +61,8 @@ public class T3Menu : IT3Menu
         {
             OptionDisplay = display,
             Parent = this,
-            Type = OptionType.Text
+            Type = OptionType.Text,
+            IsDisabled = !selectable
         };
 
         Options.AddLast(newTextOption);

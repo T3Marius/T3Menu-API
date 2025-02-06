@@ -12,10 +12,10 @@ namespace T3MenuAPI
     {
         public class Controls_Info
         {
-            public string Move { get; set; } = "WASD";
-            public string Select { get; set; } = "E";
-            public string Back { get; set; } = "Q";
-            public string Exit { get; set; } = "ESC";
+            public string Move { get; set; } = "[W/S]";
+            public string Select { get; set; } = "[E]";
+            public string Back { get; set; } = "[Shift]";
+            public string Exit { get; set; } = "[R]";
             public string LeftArrow { get; set; } = "◄";
             public string RightArrow { get; set; } = "►";
             public string LeftBracket { get; set; } = "]";

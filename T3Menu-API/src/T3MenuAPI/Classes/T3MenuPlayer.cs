@@ -30,8 +30,18 @@ namespace T3MenuAPI
 
             MainMenu = menu;
             CurrentMenu = menu;
+
+            MenuStart = MainMenu.Options.First;
+
             CurrentChoice = MainMenu.Options.First;
-            MenuStart = CurrentChoice;
+            while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
+            {
+                CurrentChoice = CurrentChoice.Next;
+            }
+            if (CurrentChoice == null)
+            {
+                CurrentChoice = MainMenu.Options.First;
+            }
 
             if (MainMenu.FreezePlayer && player != null)
             {
@@ -53,16 +63,35 @@ namespace T3MenuAPI
             if (menu == null)
             {
                 CurrentMenu = MainMenu;
+                // Set MenuStart to the beginning so that all options (including text) are visible.
+                MenuStart = MainMenu?.Options.First;
                 CurrentChoice = MainMenu?.Options.First;
-                MenuStart = CurrentChoice;
+                while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
+                {
+                    CurrentChoice = CurrentChoice.Next;
+                }
+                if (CurrentChoice == null)
+                {
+                    CurrentChoice = MainMenu?.Options.First;
+                }
                 UpdateCenterHtml();
                 return;
             }
 
             CurrentMenu = menu;
             VisibleOptions = menu.Title != "" ? 4 : 5;
+
+            MenuStart = menu.Options.First;
+
             CurrentChoice = menu.Options.First;
-            MenuStart = CurrentChoice;
+            while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
+            {
+                CurrentChoice = CurrentChoice.Next;
+            }
+            if (CurrentChoice == null)
+            {
+                CurrentChoice = menu.Options.First;
+            }
 
             if (CurrentMenu.FreezePlayer && player != null)
             {
@@ -76,6 +105,7 @@ namespace T3MenuAPI
 
             UpdateCenterHtml();
         }
+
 
         public void CloseSubMenu()
         {
@@ -154,91 +184,96 @@ namespace T3MenuAPI
             UpdateCenterHtml();
         }
 
-        public void ScrollUp()
-        {
-            LinkedListNode<IT3Option>? nextChoice = CurrentChoice?.Previous;
-
-            // Skip disabled options
-            while (nextChoice != null && nextChoice.Value.IsDisabled)
-            {
-                nextChoice = nextChoice.Previous;
-            }
-
-            if (nextChoice != null)
-            {
-                CurrentChoice = nextChoice;
-
-                if (CurrentChoice == MenuStart?.Previous && MenuStart?.Previous != null)
-                {
-                    MenuStart = MenuStart.Previous;
-                }
-            }
-            else
-            {
-                // Wrap around to the last option, skipping disabled ones
-                CurrentChoice = CurrentMenu?.Options.Last;
-                while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
-                {
-                    CurrentChoice = CurrentChoice.Previous;
-                }
-
-                MenuStart = CurrentChoice;
-                for (int i = 0; i < VisibleOptions - 1 && MenuStart?.Previous != null; i++)
-                {
-                    MenuStart = MenuStart.Previous;
-                }
-            }
-
-            if (MainMenu!.HasSound && player != null)
-            {
-                player.ExecuteClientCommand($"play {Controls_Config.Sounds.ScrollUp}");
-            }
-
-            UpdateCenterHtml();
-        }
-
         public void ScrollDown()
         {
-            LinkedListNode<IT3Option>? nextChoice = CurrentChoice?.Next;
+            if (CurrentMenu == null || CurrentChoice == null)
+                return;
 
-            // Skip disabled options
-            while (nextChoice != null && nextChoice.Value.IsDisabled)
+            LinkedListNode<IT3Option>? nextSelectable = null;
+            var candidate = CurrentChoice;
+
+            while (candidate?.Next != null)
             {
-                nextChoice = nextChoice.Next;
-            }
-
-            if (nextChoice != null)
-            {
-                CurrentChoice = nextChoice;
-
-                var lastVisible = MenuStart;
-                for (int i = 0; i < VisibleOptions - 1 && lastVisible?.Next != null; i++)
+                candidate = candidate.Next;
+                if (!candidate.Value.IsDisabled)
                 {
-                    lastVisible = lastVisible.Next;
-                }
-
-                if (CurrentChoice == lastVisible?.Next && lastVisible?.Next != null)
-                {
-                    MenuStart = MenuStart?.Next;
+                    nextSelectable = candidate;
+                    break;
                 }
             }
-            else
-            {
-                // Wrap around to the first option, skipping disabled ones
-                CurrentChoice = CurrentMenu?.Options.First;
-                while (CurrentChoice != null && CurrentChoice.Value.IsDisabled)
-                {
-                    CurrentChoice = CurrentChoice.Next;
-                }
 
-                MenuStart = CurrentChoice;
+            if (nextSelectable == null)
+            {
+                candidate = CurrentMenu.Options.First;
+                while (candidate != null && candidate != CurrentChoice)
+                {
+                    if (!candidate.Value.IsDisabled)
+                    {
+                        nextSelectable = candidate;
+                        break;
+                    }
+                    candidate = candidate.Next;
+                }
             }
+
+            // Only update if we found a selectable option.
+            if (nextSelectable != null)
+            {
+                CurrentChoice = nextSelectable;
+            }
+
+            AdjustVisibleWindow();
 
             if (MainMenu!.HasSound && player != null)
             {
                 player.ExecuteClientCommand($"play {Controls_Config.Sounds.ScrollDown}");
             }
+            UpdateCenterHtml();
+        }
 
+        public void ScrollUp()
+        {
+            if (CurrentMenu == null || CurrentChoice == null)
+                return;
+
+            LinkedListNode<IT3Option>? prevSelectable = null;
+            var candidate = CurrentChoice;
+
+            while (candidate?.Previous != null)
+            {
+                candidate = candidate.Previous;
+                if (!candidate.Value.IsDisabled)
+                {
+                    prevSelectable = candidate;
+                    break;
+                }
+            }
+
+            if (prevSelectable == null)
+            {
+                candidate = CurrentMenu.Options.Last;
+                while (candidate != null && candidate != CurrentChoice)
+                {
+                    if (!candidate.Value.IsDisabled)
+                    {
+                        prevSelectable = candidate;
+                        break;
+                    }
+                    candidate = candidate.Previous;
+                }
+            }
+
+            if (prevSelectable != null)
+            {
+                CurrentChoice = prevSelectable;
+            }
+
+            AdjustVisibleWindow();
+
+            if (MainMenu!.HasSound && player != null)
+            {
+                player.ExecuteClientCommand($"play {Controls_Config.Sounds.ScrollUp}");
+            }
             UpdateCenterHtml();
         }
 
@@ -334,7 +369,14 @@ namespace T3MenuAPI
                 }
                 else if (current.Value?.Type == OptionType.Text)
                 {
-                    optionText = $"<font class='fontSize-m'>{optionDisplay}</font>";
+                    if (current == CurrentChoice)
+                    {
+                        optionText = $"<font color='#FFFF00'>{rightArrow}{rightBracket} </font><font class='fontSize-m'>{optionDisplay}</font><font color='#FFFF00'> {leftBracket}{leftArrow}</font>";
+                    }
+                    else
+                    {
+                        optionText = $"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>";
+                    }
                 }
                 else if (current.Value?.Type == OptionType.Slider)
                 {
@@ -373,7 +415,6 @@ namespace T3MenuAPI
             }
             if (Controls_Config.Settings.ShowDeveloperInfo)
             {
-                // developer info
                 string developerInfo = "<font class='fontSize-s' color='white'>Developed by <font color='#ff3333'>T3Marius</font></font>";
                 builder.Append(developerInfo);
                 builder.AppendLine("<br>");
@@ -392,6 +433,49 @@ namespace T3MenuAPI
             builder.Append(controlsInfo);
             player.PrintToCenterHtml(builder.ToString());
         }
+        private void AdjustVisibleWindow()
+        {
+            if (CurrentMenu == null || CurrentChoice == null)
+                return;
 
+            int currentIndex = GetIndex(CurrentChoice);
+            int menuStartIndex = GetIndex(MenuStart);
+
+            if (currentIndex < menuStartIndex)
+            {
+                MenuStart = GetNodeAt(currentIndex);
+            }
+            else if (currentIndex >= menuStartIndex + VisibleOptions)
+            {
+                MenuStart = GetNodeAt(currentIndex - VisibleOptions + 1);
+            }
+        }
+
+        private int GetIndex(LinkedListNode<IT3Option>? node)
+        {
+            if (node == null || CurrentMenu == null)
+                return -1;
+            int index = 0;
+            for (var cur = CurrentMenu.Options.First; cur != null; cur = cur.Next)
+            {
+                if (cur == node)
+                    return index;
+                index++;
+            }
+            return -1;
+        }
+        private LinkedListNode<IT3Option>? GetNodeAt(int index)
+        {
+            if (CurrentMenu == null)
+                return null;
+            int currentIndex = 0;
+            for (var cur = CurrentMenu.Options.First; cur != null; cur = cur.Next)
+            {
+                if (currentIndex == index)
+                    return cur;
+                currentIndex++;
+            }
+            return null;
+        }
     }
 }
