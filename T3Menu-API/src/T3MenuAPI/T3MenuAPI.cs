@@ -44,7 +44,7 @@ public class Buttons
 public class T3MenuAPI : BasePlugin
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.5";
+    public override string ModuleVersion => "1.0.6";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
