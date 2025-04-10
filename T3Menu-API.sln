@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3Menu-API", "T3Menu-API\T3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3MenuSharedAPI", "T3MenuShared\T3MenuSharedAPI.csproj", "{C1B4C55D-9613-4926-9CEE-BA0D5A64295D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuExample", "MenuExample\MenuExample.csproj", "{A10C3CAE-1464-4D1D-82EF-D88FFB03B33C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +23,15 @@ Global
 		{C1B4C55D-9613-4926-9CEE-BA0D5A64295D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1B4C55D-9613-4926-9CEE-BA0D5A64295D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1B4C55D-9613-4926-9CEE-BA0D5A64295D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A10C3CAE-1464-4D1D-82EF-D88FFB03B33C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A10C3CAE-1464-4D1D-82EF-D88FFB03B33C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A10C3CAE-1464-4D1D-82EF-D88FFB03B33C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A10C3CAE-1464-4D1D-82EF-D88FFB03B33C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1D8AD386-07C8-424D-9D09-A306BDE16956}
 	EndGlobalSection
 EndGlobal

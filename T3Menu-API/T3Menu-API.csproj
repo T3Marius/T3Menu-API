@@ -7,27 +7,18 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-		<OutputPath>bin\Release\addons\counterstrikesharp\plugins\T3Menu-API\</OutputPath>
+		<OutputPath>$(ProjectDir)..\BuildOutput\plugins\T3Menu-API\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<Configuration>Release</Configuration>
 		<DebugType>none</DebugType>
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.305" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.316" />
   </ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="T3MenuSharedAPI">
-			<HintPath>..\T3MenuSharedAPI.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	
-	<ItemGroup>
-		<None Update="YamlDotNet.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+		<ProjectReference Include="..\T3MenuShared\T3MenuSharedAPI.csproj" />
 	</ItemGroup>
 
 </Project>
