@@ -4,6 +4,7 @@ using T3MenuSharedApi;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API;
 using System.Collections.Concurrent;
+using CounterStrikeSharp.API.Core.Attributes;
 
 namespace T3MenuAPI;
 
@@ -40,11 +41,11 @@ public class Buttons
         { "Tab", (PlayerButtons)8589934592 }
     };
 }
-
-public class T3MenuAPI : BasePlugin
+[MinimumApiVersion(313)]
+public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.6";
+    public override string ModuleVersion => "1.0.7";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
@@ -54,12 +55,25 @@ public class T3MenuAPI : BasePlugin
     private static readonly ConcurrentDictionary<CCSPlayerController, (PlayerButtons Button, DateTime LastPress, int RepeatCount)> ButtonHoldState = new();
     private const float InitialDelay = 0.5f;
     private const float RepeatDelay = 0.1f;
-
+    public MenuConfig Config { get; set; } = new MenuConfig();
+    public void OnConfigParsed(MenuConfig config)
+    {
+        Config = config;
+    }
     public override void Load(bool hotReload)
     {
-        Controls_Config.Load();
+        Instance = this;
+
         var t3MenuManager = new T3MenuManager();
         Capabilities.RegisterPluginCapability(T3MenuManagerCapability, () => t3MenuManager);
+
+        RegisterListener<OnServerPrecacheResources>((resource) =>
+        {
+            foreach (var file in Config.Sounds.SoundEventFiles)
+            {
+                resource.AddResource(file);
+            }
+        });
 
         RegisterEventHandler<EventPlayerActivate>((@event, info) =>
         {
@@ -111,7 +125,6 @@ public class T3MenuAPI : BasePlugin
             var controller = player.player!;
             PlayerButtons currentButtons = controller.Buttons;
 
-            // Handle Button Hold for Fast Scroll
             if (!ButtonHoldState.TryGetValue(controller, out var holdState))
             {
                 holdState = ((PlayerButtons)0, DateTime.MinValue, 0);
@@ -156,37 +169,37 @@ public class T3MenuAPI : BasePlugin
     {
         bool buttonHandled = false;
 
-        if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.ScrollUpButton, out var scrollUpButton) && (button & scrollUpButton) != 0)
+        if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollUpButton, out var scrollUpButton) && (button & scrollUpButton) != 0)
         {
             player.ScrollUp();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.ScrollDownButton, out var scrollDownButton) && (button & scrollDownButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollDownButton, out var scrollDownButton) && (button & scrollDownButton) != 0)
         {
             player.ScrollDown();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.SlideLeftButton, out var slideLeftButton) && (button & slideLeftButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideLeftButton, out var slideLeftButton) && (button & slideLeftButton) != 0)
         {
             player.SlideLeft();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.SlideRightButton, out var slideRightButton) && (button & slideRightButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideRightButton, out var slideRightButton) && (button & slideRightButton) != 0)
         {
             player.SlideRight();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.SelectButton, out var selectButton) && (button & selectButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SelectButton, out var selectButton) && (button & selectButton) != 0)
         {
             player.Choose();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.BackButton, out var backButton) && (button & backButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.BackButton, out var backButton) && (button & backButton) != 0)
         {
             player.CloseSubMenu();
             buttonHandled = true;
         }
-        else if (Buttons.ButtonMapping.TryGetValue(Controls_Config.Buttons.ExitButton, out var exitButton) && (button & exitButton) != 0)
+        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ExitButton, out var exitButton) && (button & exitButton) != 0)
         {
             Server.NextFrame(() =>
             {
