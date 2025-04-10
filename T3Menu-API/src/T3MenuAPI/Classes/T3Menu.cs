@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using Microsoft.Extensions.Logging;
 using T3MenuAPI;
 
 public class T3Menu : IT3Menu
@@ -13,11 +14,11 @@ public class T3Menu : IT3Menu
     public bool showDeveloper { get; set; } = true;
     public Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
     public int LastSelectedIndex { get; set; } = 0;
-    public LinkedListNode<IT3Option> Add(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false)
+    public LinkedListNode<IT3Option> AddOption(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false)
     {
         T3Option newOption = new()
         {
-            OptionDisplay = isDisabled ? $"<font color='grey'>{display}</font>" : display,
+            OptionDisplay = isDisabled ? $"<font color='#34282C'>{display}</font>" : display,
             OnChoose = isDisabled ? null! : onChoice,
             Index = Options.Count,
             Parent = this,
@@ -26,6 +27,51 @@ public class T3Menu : IT3Menu
         };
 
         return Options.AddLast(newOption);
+    }
+    public LinkedListNode<IT3Option> AddSliderOption(string display, List<object> values, object? defaultValue = null, int displayItems = 3, Action<CCSPlayerController, IT3Option, int>? onSelectConfirm = null)
+    {
+        if (values == null || values.Count == 0)
+        {
+            T3Option newOption = new()
+            {
+                OptionDisplay = $"{display}: No items",
+                Index = Options.Count,
+                Parent = this,
+                Type = OptionType.Slider,
+                IsDisabled = true,
+                CustomValues = new List<object>()
+            };
+            return Options.AddLast(newOption);
+        }
+
+        if (defaultValue == null && values.Count > 0)
+        {
+            defaultValue = values[0];
+        }
+
+        displayItems = Math.Max(1, Math.Min(displayItems, values.Count));
+
+        T3Option sliderOption = new()
+        {
+            OptionDisplay = display,
+            OnChoose = (player, option) => {
+                if (option is T3Option sOption && sOption.CustomValues != null)
+                {
+                    int idx = sOption.GetSelectedIndex();
+                    onSelectConfirm?.Invoke(player, sOption, idx);
+                }
+            },
+            Index = Options.Count,
+            Parent = this,
+            Type = OptionType.Slider,
+            DefaultValue = defaultValue,
+            DisplayItems = displayItems,
+            CustomValues = values,
+            OnSlide = (player, option, index) => {
+            }
+        };
+
+        return Options.AddLast(sliderOption);
     }
     public LinkedListNode<IT3Option> AddBoolOption(string display, bool defaultValue = false, Action<CCSPlayerController, IT3Option>? onToggle = null)
     {
@@ -51,7 +97,6 @@ public class T3Menu : IT3Menu
 
         return Options.AddLast(newBoolOption);
     }
-
     public void AddTextOption(string display, bool selectable = false)
     {
         if (Options == null)
@@ -66,50 +111,5 @@ public class T3Menu : IT3Menu
         };
 
         Options.AddLast(newTextOption);
-    }
-    public LinkedListNode<IT3Option> AddSliderOption(
-       string display,
-       List<object> customValues,
-       object defaultValue,
-       Action<CCSPlayerController, IT3Option>? onSlide = null)
-    {
-        if (!customValues.Contains(defaultValue))
-            throw new ArgumentException("Default value must be in the custom values list.");
-
-        var newSliderOption = new T3Option
-        {
-            // Do not append defaultValue if display is empty or null
-            OptionDisplay = !string.IsNullOrWhiteSpace(display)
-                ? $"{display}: {defaultValue}" // Show display and value
-                : null, // Set OptionDisplay to null when display is empty
-
-            SliderValue = defaultValue,
-            CustomValues = customValues,
-            Index = Options.Count,
-            Parent = this,
-            Type = OptionType.Slider,
-            OnChoose = (player, option) =>
-            {
-                onSlide?.Invoke(player, option);
-            },
-            OnSlide = (player, option, direction) =>
-            {
-                var sliderOption = (T3Option)option;
-
-                var customValuesList = sliderOption.CustomValues!;
-                int currentIndex = customValuesList.IndexOf(sliderOption.SliderValue!);
-                int newIndex = Math.Clamp(currentIndex + direction, 0, customValuesList.Count - 1);
-
-                sliderOption.SliderValue = customValuesList[newIndex];
-
-                sliderOption.OptionDisplay = !string.IsNullOrWhiteSpace(display)
-                    ? $"{display}: {sliderOption.SliderValue}"
-                    : null;
-
-                onSlide?.Invoke(player, sliderOption);
-            }
-        };
-
-        return Options.AddLast(newSliderOption);
     }
 }
