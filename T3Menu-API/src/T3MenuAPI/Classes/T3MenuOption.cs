@@ -7,11 +7,22 @@ public class T3Option : IT3Option
     public Action<CCSPlayerController, IT3Option> OnChoose { get; set; } = delegate { };
     public int Index { get; set; }
     public OptionType Type { get; set; }
-    public object? SliderValue { get; set; }
     public bool IsDisabled { get; set; }
-    public List<object>? CustomValues { get; set; }
     public Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
-    public string? InputValue { get; set; }
-    public string PlaceHolder { get; set; } = "";
+    public object? DefaultValue { get; set; }
+    public int DisplayItems { get; set; }
+    public List<object>? CustomValues { get; set; }
+    public object? Value
+    {
+        get => DefaultValue;
+        set => DefaultValue = value;
+    }
+    public int GetSelectedIndex()
+    {
+        if (CustomValues == null || DefaultValue == null)
+            return 0;
 
+        int idx = CustomValues.FindIndex(x => x?.Equals(DefaultValue) == true);
+        return idx >= 0 ? idx : 0;
+    }
 }
