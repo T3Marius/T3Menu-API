@@ -11,10 +11,11 @@ namespace T3MenuAPI
     public class T3MenuPlayer
     {
         public CCSPlayerController? player { get; set; }
+        public bool InputMode { get; set; } = false;
+        public IT3Option? CurrentInputOption { get; set; } = null;
         public T3Menu? MainMenu = null;
         public IT3Menu? CurrentMenu = null;
 
-        public IT3Option? CurrentInputOption { get; set; }
         public LinkedListNode<IT3Option>? CurrentChoice = null;
         public LinkedListNode<IT3Option>? MenuStart = null;
         public string CenterHtml = "";
@@ -70,7 +71,16 @@ namespace T3MenuAPI
 
             UpdateCenterHtml();
         }
-
+        public void Close()
+        {
+            if (MainMenu != null)
+            {
+                if (MainMenu.IsExitable)
+                {
+                    CloseMenu();
+                }
+            }
+        }
         private LinkedListNode<IT3Option>? FindFirstSelectableOption(LinkedList<IT3Option>? options)
         {
             if (options == null || options.Count == 0)
@@ -392,7 +402,8 @@ namespace T3MenuAPI
             int totalMenuItems = CurrentMenu.Options.Count;
             int currentIndex = GetIndex(CurrentChoice);
 
-            builder.Append($"<b><font color='red' class='fontSize-m'>{CurrentMenu.Title}</font></b> <font color='yellow' class='fontSize-sm'>{currentIndex + 1}</font>/<font color='orange' class='fontSize-sm'>{totalMenuItems}</font>");
+
+            builder.Append($"<b><font color='red' class='fontSize-m'>{CurrentMenu.Title.TruncateHtml(CurrentMenu.MaxTitleLenght)}</font></b> <font color='yellow' class='fontSize-sm'>{currentIndex + 1}</font>/<font color='orange' class='fontSize-sm'>{totalMenuItems}</font>");
             builder.AppendLine("<br>");
 
             string leftArrow = Instance.Config.Controls.LeftArrow;
@@ -406,7 +417,7 @@ namespace T3MenuAPI
             for (int optionIndex = 0; optionIndex < VisibleOptions && current != null; optionIndex++)
             {
                 string color = (current == CurrentChoice && !current.Value!.IsDisabled) ? "#9acd32" : "white";
-                string optionDisplay = current.Value?.OptionDisplay ?? "";
+                string optionDisplay = current.Value?.OptionDisplay?.TruncateHtml(CurrentMenu.MaxOptionLenght) ?? "";
 
                 if (current.Value!.IsDisabled)
                 {
@@ -425,6 +436,24 @@ namespace T3MenuAPI
                     else
                     {
                         builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>");
+                    }
+                }
+                else if (current.Value?.Type == OptionType.Input)
+                {
+                    string displayText = current.Value.OptionDisplay ?? "";
+
+                    if (InputMode && CurrentInputOption == current.Value)
+                    {
+                        string displayPart = displayText.Split(':')[0];
+                        displayText = $"{displayPart}: [<font color='grey'>Typing...</font>]";
+                    }
+                    if (current == CurrentChoice)
+                    {
+                        builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{displayText}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
+                    }
+                    else
+                    {
+                        builder.Append($"<font color='{color}' class='fontSize-m'>{displayText}</font>");
                     }
                 }
                 else if (current == CurrentChoice)
@@ -508,7 +537,7 @@ namespace T3MenuAPI
 
             for (int sliderItemIndex = startIdx; sliderItemIndex <= endIdx; sliderItemIndex++)
             {
-                string itemColor = (sliderItemIndex == selectedIndex) ? "#9acd32" : "white";
+                string itemColor = (sliderItemIndex == selectedIndex) ? "#9acd32" : "silver";
                 sliderContent.Append($"<font color='{itemColor}'>{sliderOption.CustomValues[sliderItemIndex]}</font> ");
             }
 
@@ -548,7 +577,7 @@ namespace T3MenuAPI
         }
         private bool IsSelectable(IT3Option option)
         {
-            return option != null && !option.IsDisabled;
+            return option != null && !option.IsDisabled && option.Type != OptionType.Text;
         }
     }
 
