@@ -137,7 +137,7 @@ namespace T3MenuAPI
             Players[player.Slot].OpenSubMenu(menu);
         }
 
-        public IT3Menu CreateMenu(string title = "", bool showDeveloper = true, bool freezePlayer = true, bool hasSound = true, bool isSubMenu = false)
+        public IT3Menu CreateMenu(string title = "", bool showDeveloper = true, bool freezePlayer = true, bool hasSound = true, bool isSubMenu = false, bool isExitable = true)
         {
             T3Menu menu = new T3Menu
             {
@@ -146,6 +146,8 @@ namespace T3MenuAPI
                 HasSound = hasSound,
                 IsSubMenu = isSubMenu,
                 showDeveloper = showDeveloper,
+                IsExitable = isExitable
+                
             };
             return menu;
         }
