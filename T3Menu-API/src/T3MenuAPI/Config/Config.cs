@@ -46,5 +46,9 @@ namespace T3MenuAPI
     public class Config_Settings
     {
         public bool ShowDeveloperInfo { get; set; } = true;
+        public string DisabledOptionColor { get; set; } = "White";
+        public string TextOptionColor { get; set; } = "White";
+        public int MaxTitleLenght { get; set; } = 32;
+        public int MaxOptionLenght { get; set; } = 32;
     }
 }

@@ -19,6 +19,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\T3MenuShared\T3MenuSharedAPI.csproj" />
+		<Content Include="T3Menu-API.toml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>..\..\configs\plugins\T3Menu-API\T3Menu-API.toml</TargetPath>
+		</Content>
 	</ItemGroup>
 
 </Project>

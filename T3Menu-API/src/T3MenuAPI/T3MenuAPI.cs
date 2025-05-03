@@ -5,6 +5,9 @@ using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API;
 using System.Collections.Concurrent;
 using CounterStrikeSharp.API.Core.Attributes;
+using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 
 namespace T3MenuAPI;
 
@@ -45,16 +48,25 @@ public class Buttons
 public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.7";
+    public override string ModuleVersion => "1.0.8";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
     public static PluginCapability<IT3MenuManager> T3MenuManagerCapability = new("t3menu:manager");
     public static T3MenuAPI Instance { get; set; } = new T3MenuAPI();
     public static readonly Dictionary<CCSPlayerController, T3Menu> ActiveMenus = new();
+    private IT3MenuManager? MenuManager;
+    private IT3MenuManager? GetMenuManager()
+    {
+        if (MenuManager == null)
+            MenuManager = new PluginCapability<IT3MenuManager>("t3menu:manager").Get();
+
+        return MenuManager;
+    }
     private static readonly ConcurrentDictionary<CCSPlayerController, (PlayerButtons Button, DateTime LastPress, int RepeatCount)> ButtonHoldState = new();
     private const float InitialDelay = 0.5f;
     private const float RepeatDelay = 0.1f;
+
     public MenuConfig Config { get; set; } = new MenuConfig();
     public void OnConfigParsed(MenuConfig config)
     {
@@ -98,6 +110,8 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         });
 
         RegisterListener<OnTick>(OnTick);
+        AddCommandListener("say", OnSayListener, HookMode.Pre);
+        AddCommandListener("say_team", OnSayListener, HookMode.Pre);
 
         if (hotReload)
         {
@@ -203,11 +217,52 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         {
             Server.NextFrame(() =>
             {
-                player.OpenMainMenu(null);
+                player.Close();
             });
             buttonHandled = true;
         }
 
         return buttonHandled;
+    }
+    public HookResult OnSayListener(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null) return HookResult.Continue;
+
+        var menuPlayer = Players.Values.FirstOrDefault(p => p.player == player);
+        if (menuPlayer == null || !menuPlayer.InputMode || menuPlayer.CurrentInputOption == null)
+            return HookResult.Continue;
+
+        string input = command.ArgString;
+        if (string.IsNullOrWhiteSpace(input))
+            return HookResult.Handled;
+
+        if (input.Contains("cancel", StringComparison.OrdinalIgnoreCase))
+        {
+            menuPlayer.InputMode = false;
+            menuPlayer.CurrentInputOption = null;
+            menuPlayer.UpdateCenterHtml();
+            return HookResult.Handled;
+        }
+
+        input = input.Replace("\"", "").Trim();
+
+        var inputOption = menuPlayer.CurrentInputOption as T3Option;
+        if (inputOption != null)
+        {
+            string displayPart = inputOption.OptionDisplay!.Split(':')[0];
+
+            inputOption.OptionDisplay = $"{displayPart}: [<font color='#00ff00'>{input}</font>]";
+
+            inputOption.DefaultValue = input;
+
+            inputOption.OnInputSubmit?.Invoke(player, inputOption, input);
+
+            menuPlayer.InputMode = false;
+            menuPlayer.CurrentInputOption = null;
+
+            menuPlayer.UpdateCenterHtml();
+        }
+
+        return HookResult.Handled;
     }
 }
