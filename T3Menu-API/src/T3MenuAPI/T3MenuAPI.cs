@@ -48,7 +48,7 @@ public class Buttons
 public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.8";
+    public override string ModuleVersion => "1.0.9";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
