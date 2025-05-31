@@ -22,6 +22,7 @@ namespace T3MenuAPI
         public int VisibleOptions = 4;
         public static IStringLocalizer? Localizer = null;
         public PlayerButtons Buttons { get; set; }
+        private float oldVelocitiyModifier;
 
         public void OpenMainMenu(T3Menu? menu)
         {
@@ -37,9 +38,14 @@ namespace T3MenuAPI
             MenuStart = MainMenu.Options.First;
             CurrentChoice = FindFirstSelectableOption(MainMenu.Options);
 
+            if (player != null)
+            {
+                ActiveMenus[player] = menu;
+            }
+
             if (MainMenu.FreezePlayer && player != null)
             {
-                player.Freeze();
+                player.SaveSpeed(ref oldVelocitiyModifier);
             }
             Server.NextFrame(() =>
             {
@@ -63,11 +69,6 @@ namespace T3MenuAPI
 
             MenuStart = menu.Options.First;
             CurrentChoice = FindFirstSelectableOption(menu.Options);
-
-            if (CurrentMenu.FreezePlayer && player != null)
-            {
-                player.Freeze();
-            }
 
             UpdateCenterHtml();
         }
@@ -148,8 +149,9 @@ namespace T3MenuAPI
 
             if (player != null)
             {
-                player.UnFreeze();
+                player.UnFreeze(oldVelocitiyModifier);
                 Players[player.Slot].OpenMainMenu(null);
+                ActiveMenus.Remove(player);
             }
         }
 
@@ -417,11 +419,11 @@ namespace T3MenuAPI
             for (int optionIndex = 0; optionIndex < VisibleOptions && current != null; optionIndex++)
             {
                 string color = (current == CurrentChoice && !current.Value!.IsDisabled) ? "#9acd32" : "white";
-                string optionDisplay = current.Value?.OptionDisplay?.TruncateHtml(CurrentMenu.MaxOptionLenght) ?? "";
+                string optionDisplay = current.Value?.OptionDisplay ?? "";
 
                 if (current.Value!.IsDisabled)
                 {
-                    builder.Append($"<font color='grey' class='fontSize-m'>{optionDisplay}</font>");
+                    builder.Append($"<font color='grey' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxTitleLenght)}</font>");
                 }
                 else if (current.Value?.Type == OptionType.Slider)
                 {
@@ -431,11 +433,11 @@ namespace T3MenuAPI
                 {
                     if (current == CurrentChoice)
                     {
-                        builder.Append($"<font color='#FFFF00'>{rightArrow}{rightBracket} </font><font class='fontSize-m'>{optionDisplay}</font><font color='#FFFF00'> {leftBracket}{leftArrow}</font>");
+                        builder.Append($"<font color='#FFFF00'>{rightArrow}{rightBracket} </font><font class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxTitleLenght)}</font><font color='#FFFF00'> {leftBracket}{leftArrow}</font>");
                     }
                     else
                     {
-                        builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>");
+                        builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxTitleLenght)}</font>");
                     }
                 }
                 else if (current.Value?.Type == OptionType.Input)
@@ -449,20 +451,32 @@ namespace T3MenuAPI
                     }
                     if (current == CurrentChoice)
                     {
-                        builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{displayText}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
+                        builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{displayText.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
                     }
                     else
                     {
-                        builder.Append($"<font color='{color}' class='fontSize-m'>{displayText}</font>");
+                        builder.Append($"<font color='{color}' class='fontSize-m'>{displayText.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font>");
+                    }
+                }
+                else if (current.Value?.Type == OptionType.Bool || current.Value?.Type == OptionType.Button)
+                {
+                    // Handle Button (default) and Bool types with MaxOptionLenght
+                    if (current == CurrentChoice)
+                    {
+                        builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
+                    }
+                    else
+                    {
+                        builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font>");
                     }
                 }
                 else if (current == CurrentChoice)
                 {
-                    builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{optionDisplay}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
+                    builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
                 }
                 else
                 {
-                    builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay}</font>");
+                    builder.Append($"<font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font>");
                 }
 
                 builder.AppendLine("<br>");

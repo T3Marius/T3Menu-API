@@ -3,11 +3,11 @@ using static CounterStrikeSharp.API.Core.Listeners;
 using T3MenuSharedApi;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API;
-using System.Collections.Concurrent;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
+using static T3MenuAPI.Classes.Library;
+using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace T3MenuAPI;
 
@@ -128,6 +128,17 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     public void OnTick()
     {
         DateTime now = DateTime.Now;
+
+        foreach (var p in Utilities.GetPlayers().Where(p => !p.IsBot && !p.IsHLTV))
+        {
+            if (ActiveMenus.TryGetValue(p, out var activeMenu))
+            {
+                if (activeMenu.FreezePlayer)
+                {
+                    p.Freeze();
+                }
+            }
+        }
 
         foreach (var player in Players.Values.Where(p => p.MainMenu != null))
         {

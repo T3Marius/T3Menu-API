@@ -60,7 +60,8 @@ public class T3Menu : IT3Menu
         T3Option sliderOption = new()
         {
             OptionDisplay = display,
-            OnChoose = (player, option) => {
+            OnChoose = (player, option) =>
+            {
                 if (option is T3Option sOption && sOption.CustomValues != null)
                 {
                     int idx = sOption.GetSelectedIndex();
@@ -73,7 +74,8 @@ public class T3Menu : IT3Menu
             DefaultValue = defaultValue,
             DisplayItems = displayItems,
             CustomValues = values,
-            OnSlide = (player, option, index) => {
+            OnSlide = (player, option, index) =>
+            {
             }
         };
 
@@ -106,7 +108,7 @@ public class T3Menu : IT3Menu
     public LinkedListNode<IT3Option> AddInputOption(string display, string placeHolderText = "", Action<CCSPlayerController, IT3Option, string>? onInputSubmit = null, string? inputPromptMessage = null)
     {
         if (Options == null)
-            Options= new();
+            Options = new();
 
         T3Option newInputOption = new()
         {

@@ -147,7 +147,7 @@ namespace T3MenuAPI
                 IsSubMenu = isSubMenu,
                 showDeveloper = showDeveloper,
                 IsExitable = isExitable
-                
+
             };
             return menu;
         }
