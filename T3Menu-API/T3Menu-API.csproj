@@ -13,9 +13,12 @@
 		<DebugType>none</DebugType>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.316" />
-  </ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="CounterStrikeSharp.API">
+			<HintPath>CounterStrikeSharp.API.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\T3MenuShared\T3MenuSharedAPI.csproj" />
@@ -23,6 +26,12 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>..\..\configs\plugins\T3Menu-API\T3Menu-API.toml</TargetPath>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="CounterStrikeSharp.API" Version="1.0.337" />
+	  <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="9.0.7" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
 	</ItemGroup>
 
 </Project>
