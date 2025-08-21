@@ -43,9 +43,10 @@ namespace T3MenuAPI
                 ActiveMenus[player] = menu;
             }
 
-            if (MainMenu.FreezePlayer && player != null)
+            if (player != null && Instance.Config.Settings.FreezePlayer)
             {
-                player.SaveSpeed(ref oldVelocitiyModifier);
+                player.Freeze();
+                System.Console.WriteLine("Freeze player called");
             }
             Server.NextFrame(() =>
             {
@@ -149,9 +150,13 @@ namespace T3MenuAPI
 
             if (player != null)
             {
-                player.UnFreeze(oldVelocitiyModifier);
                 Players[player.Slot].OpenMainMenu(null);
                 ActiveMenus.Remove(player);
+
+                if (Instance.Config.Settings.FreezePlayer)
+                {
+                    player.Unfreeze();
+                }
             }
         }
 

@@ -8,6 +8,10 @@ using CounterStrikeSharp.API.Modules.Commands;
 using static T3MenuAPI.Classes.Library;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
+using T3MenuAPI.Classes;
+using CounterStrikeSharp.API.Modules.Extensions;
 
 namespace T3MenuAPI;
 
@@ -48,18 +52,20 @@ public class Buttons
 public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 {
     public override string ModuleName => "T3MenuAPI";
-    public override string ModuleVersion => "1.0.9";
+    public override string ModuleVersion => "1.1.0";
     public override string ModuleAuthor => "T3Marius";
 
     public static readonly Dictionary<int, T3MenuPlayer> Players = new();
     public static PluginCapability<IT3MenuManager> T3MenuManagerCapability = new("t3menu:manager");
     public static T3MenuAPI Instance { get; set; } = new T3MenuAPI();
     public static readonly Dictionary<CCSPlayerController, T3Menu> ActiveMenus = new();
-    private IT3MenuManager? MenuManager;
-    private IT3MenuManager? GetMenuManager()
+    private Timer optionCountTimer = null!;
+    private CCSGameRules? _gameRules;
+    private IT3MenuManager MenuManager = null!;
+    public IT3MenuManager GetMenuManager()
     {
         if (MenuManager == null)
-            MenuManager = new PluginCapability<IT3MenuManager>("t3menu:manager").Get();
+            MenuManager = new PluginCapability<IT3MenuManager>("t3menu:manager").Get()!;
 
         return MenuManager;
     }
@@ -71,6 +77,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     public void OnConfigParsed(MenuConfig config)
     {
         Config = config;
+        Config.Update();
     }
     public override void Load(bool hotReload)
     {
@@ -105,10 +112,30 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             if (@event.Userid != null)
             {
                 Players.Remove(@event.Userid.Slot);
+                _playerSavedSpeed.Remove(@event.Userid);
             }
             return HookResult.Continue;
         });
 
+        RegisterEventHandler<EventRoundStart>((@event, info) =>
+        {
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (ActiveMenus.TryGetValue(player, out var activeMenu))
+                {
+                    if (activeMenu.FreezePlayer)
+                    {
+                        player.Freeze();
+                    }
+                }
+            }
+
+            return HookResult.Continue;
+        });
+        RegisterListener<Listeners.OnMapStart>((mapName) =>
+        {
+            _gameRules = null;
+        });
         RegisterListener<OnTick>(OnTick);
         AddCommandListener("say", OnSayListener, HookMode.Pre);
         AddCommandListener("say_team", OnSayListener, HookMode.Pre);
@@ -129,15 +156,9 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     {
         DateTime now = DateTime.Now;
 
-        foreach (var p in Utilities.GetPlayers().Where(p => !p.IsBot && !p.IsHLTV))
+        foreach (var pl in Utilities.GetPlayers())
         {
-            if (ActiveMenus.TryGetValue(p, out var activeMenu))
-            {
-                if (activeMenu.FreezePlayer)
-                {
-                    p.Freeze();
-                }
-            }
+            UpdateFrozenPlayers();
         }
 
         foreach (var player in Players.Values.Where(p => p.MainMenu != null))
@@ -148,6 +169,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             });
 
             var controller = player.player!;
+
             PlayerButtons currentButtons = controller.Buttons;
 
             if (!ButtonHoldState.TryGetValue(controller, out var holdState))
@@ -243,37 +265,42 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         if (menuPlayer == null || !menuPlayer.InputMode || menuPlayer.CurrentInputOption == null)
             return HookResult.Continue;
 
-        string input = command.ArgString;
-        if (string.IsNullOrWhiteSpace(input))
-            return HookResult.Handled;
-
-        if (input.Contains("cancel", StringComparison.OrdinalIgnoreCase))
+        if (MenuManager.GetActiveMenu(player) != null)
         {
-            menuPlayer.InputMode = false;
-            menuPlayer.CurrentInputOption = null;
-            menuPlayer.UpdateCenterHtml();
+            string input = command.ArgString;
+            if (string.IsNullOrWhiteSpace(input))
+                return HookResult.Handled;
+
+            if (input.Contains("cancel", StringComparison.OrdinalIgnoreCase))
+            {
+                menuPlayer.InputMode = false;
+                menuPlayer.CurrentInputOption = null;
+                menuPlayer.UpdateCenterHtml();
+                return HookResult.Handled;
+            }
+
+            input = input.Replace("\"", "").Trim();
+
+            var inputOption = menuPlayer.CurrentInputOption as T3Option;
+            if (inputOption != null)
+            {
+                string displayPart = inputOption.OptionDisplay!.Split(':')[0];
+
+                inputOption.OptionDisplay = $"{displayPart}: [<font color='#00ff00'>{input}</font>]";
+
+                inputOption.DefaultValue = input;
+
+                inputOption.OnInputSubmit?.Invoke(player, inputOption, input);
+
+                menuPlayer.InputMode = false;
+                menuPlayer.CurrentInputOption = null;
+
+                menuPlayer.UpdateCenterHtml();
+            }
+
             return HookResult.Handled;
         }
 
-        input = input.Replace("\"", "").Trim();
-
-        var inputOption = menuPlayer.CurrentInputOption as T3Option;
-        if (inputOption != null)
-        {
-            string displayPart = inputOption.OptionDisplay!.Split(':')[0];
-
-            inputOption.OptionDisplay = $"{displayPart}: [<font color='#00ff00'>{input}</font>]";
-
-            inputOption.DefaultValue = input;
-
-            inputOption.OnInputSubmit?.Invoke(player, inputOption, input);
-
-            menuPlayer.InputMode = false;
-            menuPlayer.CurrentInputOption = null;
-
-            menuPlayer.UpdateCenterHtml();
-        }
-
-        return HookResult.Handled;
+        return HookResult.Continue;
     }
 }

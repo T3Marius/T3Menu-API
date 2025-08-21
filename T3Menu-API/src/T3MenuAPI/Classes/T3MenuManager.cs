@@ -1,8 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
+using T3MenuAPI.Classes;
 using T3MenuSharedApi;
-using System.Collections.Generic;
-using System;
 using static T3MenuAPI.T3MenuAPI;
 
 namespace T3MenuAPI
@@ -11,7 +10,39 @@ namespace T3MenuAPI
     {
         public static readonly Dictionary<IntPtr, IT3MenuManager> ActiveMenus = new();
         private readonly Dictionary<CCSPlayerController, CounterStrikeSharp.API.Modules.Timers.Timer?> _refreshTimers = new();
+        public void Refresh(float repeat, Action? onTick)
+        {
+            if (_menuToRefresh == null || _playerToRefresh == null)
+                return;
 
+            if (_refreshTimers.TryGetValue(_playerToRefresh, out var existingTimer) && existingTimer != null)
+            {
+                existingTimer.Kill();
+                _refreshTimers[_playerToRefresh] = null;
+            }
+
+            RefreshForPlayer(_playerToRefresh, _menuToRefresh);
+
+            if (repeat > 0)
+            {
+                _refreshTimers[_playerToRefresh] = Instance.AddTimer(repeat, () =>
+                {
+                    if (_playerToRefresh.IsValid && _playerToRefresh.Connected == PlayerConnectedState.PlayerConnected)
+                    {
+                        onTick?.Invoke();
+                        RefreshForPlayer(_playerToRefresh, _menuToRefresh);
+                    }
+                    else
+                    {
+                        if (_refreshTimers.TryGetValue(_playerToRefresh, out var timer) && timer != null)
+                        {
+                            timer.Kill();
+                            _refreshTimers[_playerToRefresh] = null;
+                        }
+                    }
+                }, TimerFlags.REPEAT);
+            }
+        }
         public void Refresh(float repeat = 0)
         {
             if (_menuToRefresh == null || _playerToRefresh == null)
@@ -96,6 +127,7 @@ namespace T3MenuAPI
 
             Players[player.Slot].OpenMainMenu(null);
             ActiveMenus.Remove(player.Handle);
+
         }
 
         public void CloseActiveMenu(CCSPlayerController? player)

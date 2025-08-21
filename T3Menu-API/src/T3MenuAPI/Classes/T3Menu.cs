@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using T3MenuAPI;
+using T3MenuSharedApi;
 using static T3MenuAPI.T3MenuAPI;
 
 public class T3Menu : IT3Menu
@@ -136,6 +137,11 @@ public class T3Menu : IT3Menu
         };
         newInputOption.OnInputSubmit = onInputSubmit;
         return Options.AddLast(newInputOption);
+    }
+    public void Close(CCSPlayerController player)
+    {
+        IT3MenuManager? manager = Instance.GetMenuManager() ?? throw new Exception("T3MenuAPI API was not found!");
+        manager.CloseMenu(player);
     }
     public void AddTextOption(string display, bool selectable = false)
     {
