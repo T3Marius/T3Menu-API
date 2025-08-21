@@ -45,6 +45,7 @@ namespace T3MenuAPI
     }
     public class Config_Settings
     {
+        public bool FreezePlayer { get; set; } = true;
         public bool ShowDeveloperInfo { get; set; } = true;
         public string DisabledOptionColor { get; set; } = "White";
         public string TextOptionColor { get; set; } = "White";
