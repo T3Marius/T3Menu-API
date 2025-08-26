@@ -105,14 +105,6 @@ jobs:
           echo "MenuExample build output not found, skipping..."
         fi
         
-        # Copy additional documentation files
-        if [ -f "README.md" ]; then
-          cp README.md release-artifacts/
-        fi
-        if [ -f "LICENSE" ]; then
-          cp LICENSE release-artifacts/
-        fi
-        
         # Show what we have in release artifacts
         echo "Release artifacts structure:"
         find release-artifacts -type f
@@ -161,31 +153,11 @@ jobs:
           COMPARE_LINK="**Initial Release** 🎉"
         fi
         
-        # Write changelog to file with installation instructions
+        # Write changelog to file with only what's changed
         cat << EOF > changelog.md
         ## What's Changed in ${{ steps.version.outputs.VERSION }}
         
         $CHANGELOG
-        
-        ## Installation Instructions
-        
-        1. Download the \`T3Menu-API-${{ steps.version.outputs.VERSION }}.zip\` file from this release
-        2. Extract the contents to your CounterStrikeSharp installation directory
-        3. The structure should be:
-           - \`addons/counterstrikesharp/plugins/T3Menu-API/\` (plugin files)
-           - \`addons/counterstrikesharp/shared/T3MenuSharedAPI/\` (shared API files)
-           - \`addons/counterstrikesharp/configs/plugins/T3Menu-API/\` (configuration files)
-        4. Restart your CounterStrikeSharp server
-        
-        ## For Developers
-        
-        The release includes:
-        - Main plugin: T3Menu-API
-        - Shared API: T3MenuSharedAPI (for other plugins to integrate with)
-        - Example implementation: MenuExample (in examples folder)
-        - Documentation: README.md and LICENSE
-        
-        $COMPARE_LINK
         EOF
         
     - name: Create GitHub Release
