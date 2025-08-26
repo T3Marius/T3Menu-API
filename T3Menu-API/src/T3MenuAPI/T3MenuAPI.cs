@@ -170,7 +170,6 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         {
             ButtonHoldState.TryRemove(player, out _);
         }
-
     }
     public void OnTick()
     {
