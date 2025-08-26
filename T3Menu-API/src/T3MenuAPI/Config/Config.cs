@@ -42,7 +42,6 @@ namespace T3MenuAPI
         public float Volume { get; set; } = 1.0f;
         public List<string> SoundEventFiles { get; set; } = [""];
     }
-
     public class Config_Settings
     {
         public bool UseOnTickForButtons { get; set; } = true;
