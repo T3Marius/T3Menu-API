@@ -446,7 +446,6 @@ namespace T3MenuAPI
 
             return current;
         }
-
         public void UpdateCenterHtml()
         {
             if (player == null || CurrentMenu == null)
