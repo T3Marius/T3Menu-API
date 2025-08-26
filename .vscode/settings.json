@@ -1,0 +1,36 @@
+{
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/*.user": true,
+        "**/*.suo": true,
+        "**/.vs": true,
+        "**/packages": true,
+        "**/*.dll": true,
+        "**/.vscode": false,
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/packages": true,
+        "**/.vs": true,
+        "**/*.dll": true
+    },
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/obj/**": true,
+        "**/packages/**": true,
+        "**/.vs/**": true,
+        "**/*.dll": true
+    },
+    "editor.suggest.showColors": false,
+    "editor.suggest.showWords": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": true,
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": false
+    },
+    "editor.suggest.localityBonus": true,
+    "omnisharp.enableRoslynAnalyzers": false
+}
