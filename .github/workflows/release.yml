@@ -1,0 +1,191 @@
+# T3Menu-API Release Workflow
+# Builds and releases T3Menu-API plugin for CounterStrike Sharp
+
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: |
+        dotnet restore T3MenuShared/T3MenuSharedAPI.csproj
+        dotnet restore T3Menu-API/T3Menu-API.csproj
+        dotnet restore MenuExample/MenuExample.csproj
+      
+    - name: Build solution
+      run: |
+        dotnet build T3MenuShared/T3MenuSharedAPI.csproj --configuration Release --no-restore
+        dotnet build T3Menu-API/T3Menu-API.csproj --configuration Release --no-restore
+        dotnet build MenuExample/MenuExample.csproj --configuration Release --no-restore
+      
+    - name: Create build artifacts
+      run: |
+        mkdir -p release-artifacts
+        
+        # Debug: Show the build outputs
+        echo "Checking build outputs..."
+        find . -name "*.dll" -type f
+        
+        # Copy the main plugin build output (T3Menu-API)
+        if [ -d "BuildOutput/plugins/T3Menu-API" ] && [ "$(ls -A BuildOutput/plugins/T3Menu-API)" ]; then
+          echo "Copying T3Menu-API plugin build output..."
+          mkdir -p release-artifacts/plugins/T3Menu-API
+          cp -r BuildOutput/plugins/T3Menu-API/* release-artifacts/plugins/T3Menu-API/
+          ls -la release-artifacts/plugins/T3Menu-API/
+        else
+          echo "T3Menu-API plugin build output not found or empty!"
+          exit 1
+        fi
+        
+        # Copy the shared API build output (T3MenuSharedAPI)
+        if [ -d "BuildOutput/shared/T3MenuSharedAPI" ] && [ "$(ls -A BuildOutput/shared/T3MenuSharedAPI)" ]; then
+          echo "Copying T3MenuSharedAPI build output..."
+          mkdir -p release-artifacts/shared/T3MenuSharedAPI
+          cp -r BuildOutput/shared/T3MenuSharedAPI/* release-artifacts/shared/T3MenuSharedAPI/
+          ls -la release-artifacts/shared/T3MenuSharedAPI/
+        else
+          echo "T3MenuSharedAPI build output not found or empty!"
+          exit 1
+        fi
+        
+        # Copy configuration files
+        if [ -d "BuildOutput/configs" ] && [ "$(ls -A BuildOutput/configs)" ]; then
+          echo "Copying configuration files..."
+          mkdir -p release-artifacts/configs
+          cp -r BuildOutput/configs/* release-artifacts/configs/
+          ls -la release-artifacts/configs/
+        else
+          echo "Configuration files not found, skipping..."
+        fi
+        
+        # Copy MenuExample build output (for developers who want to see example usage)
+        if [ -d "MenuExample/bin/Release/net8.0" ] && [ "$(ls -A MenuExample/bin/Release/net8.0)" ]; then
+          echo "Copying MenuExample build output..."
+          mkdir -p release-artifacts/examples/MenuExample
+          cp -r MenuExample/bin/Release/net8.0/* release-artifacts/examples/MenuExample/
+          # Also copy the source file for reference
+          cp MenuExample/MenuExample.cs release-artifacts/examples/MenuExample/
+          ls -la release-artifacts/examples/MenuExample/
+        else
+          echo "MenuExample build output not found, skipping..."
+        fi
+        
+        # Copy additional documentation files
+        if [ -f "README.md" ]; then
+          cp README.md release-artifacts/
+        fi
+        if [ -f "LICENSE" ]; then
+          cp LICENSE release-artifacts/
+        fi
+        
+        # Show what we have in release artifacts
+        echo "Release artifacts structure:"
+        find release-artifacts -type f
+        
+    - name: Create ZIP archive
+      run: |
+        cd release-artifacts
+        # Create the release ZIP with version tag
+        zip -r ../T3Menu-API-${{ github.ref_name }}.zip . -x "*.pdb" "*.xml"
+        cd ..
+        
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the current tag being released
+        CURRENT_TAG="${{ steps.version.outputs.VERSION }}"
+        echo "Current tag: $CURRENT_TAG"
+        
+        # Fetch all tags to ensure we have the complete list
+        git fetch --tags --force
+        
+        # Get all tags sorted by version in descending order, excluding the current tag
+        ALL_TAGS=$(git tag -l | grep -v "^${CURRENT_TAG}$" | sort -V -r)
+        echo "All tags (excluding current): $ALL_TAGS"
+        
+        # Get the most recent tag (first in the list after excluding current)
+        LAST_TAG=$(echo "$ALL_TAGS" | head -n 1)
+        
+        echo "Previous tag found: $LAST_TAG"
+        
+        if [ -n "$LAST_TAG" ]; then
+          echo "Found previous tag: $LAST_TAG"
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD)
+          COMPARE_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.version.outputs.VERSION }}"
+        else
+          echo "No previous tag found, this is the first release"
+          # First release - get all commits
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+          COMPARE_LINK="**Initial Release** 🎉"
+        fi
+        
+        # Write changelog to file with installation instructions
+        cat << EOF > changelog.md
+        ## What's Changed in ${{ steps.version.outputs.VERSION }}
+        
+        $CHANGELOG
+        
+        ## Installation Instructions
+        
+        1. Download the \`T3Menu-API-${{ steps.version.outputs.VERSION }}.zip\` file from this release
+        2. Extract the contents to your CounterStrike Sharp installation directory
+        3. The structure should be:
+           - \`addons/counterstrikesharp/plugins/T3Menu-API/\` (plugin files)
+           - \`addons/counterstrikesharp/shared/T3MenuSharedAPI/\` (shared API files)
+           - \`addons/counterstrikesharp/configs/plugins/T3Menu-API/\` (configuration files)
+        4. Restart your CounterStrike server
+        
+        ## For Developers
+        
+        The release includes:
+        - Main plugin: T3Menu-API
+        - Shared API: T3MenuSharedAPI (for other plugins to integrate with)
+        - Example implementation: MenuExample (in examples folder)
+        - Documentation: README.md and LICENSE
+        
+        $COMPARE_LINK
+        EOF
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: T3Menu-API ${{ steps.version.outputs.VERSION }}
+        body_path: changelog.md
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./T3Menu-API-${{ github.ref_name }}.zip
+        asset_name: T3Menu-API-${{ github.ref_name }}.zip
+        asset_content_type: application/zip
