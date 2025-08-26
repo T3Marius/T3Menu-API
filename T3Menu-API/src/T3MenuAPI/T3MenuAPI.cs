@@ -393,7 +393,6 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             }
             return HookResult.Handled;
         }
-
         return HookResult.Continue;
     }
 }
