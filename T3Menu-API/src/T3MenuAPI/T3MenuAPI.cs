@@ -8,10 +8,10 @@ using CounterStrikeSharp.API.Modules.Commands;
 using static T3MenuAPI.Classes.Library;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using T3MenuAPI.Classes;
 using CounterStrikeSharp.API.Modules.Extensions;
+using CounterStrikeSharp.API.Modules.Timers;
 
 namespace T3MenuAPI;
 
@@ -59,8 +59,6 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     public static PluginCapability<IT3MenuManager> T3MenuManagerCapability = new("t3menu:manager");
     public static T3MenuAPI Instance { get; set; } = new T3MenuAPI();
     public static readonly Dictionary<CCSPlayerController, T3Menu> ActiveMenus = new();
-    private Timer optionCountTimer = null!;
-    private CCSGameRules? _gameRules;
     private IT3MenuManager MenuManager = null!;
     public IT3MenuManager GetMenuManager()
     {
@@ -136,11 +134,8 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 
             return HookResult.Continue;
         });
-        RegisterListener<Listeners.OnMapStart>((mapName) =>
-        {
-            _gameRules = null;
-        });
         RegisterListener<OnTick>(OnTick);
+        RegisterListener<OnPlayerButtonsChanged>(OnPlayerButtonsChange);
         AddCommandListener("say", OnSayListener, HookMode.Pre);
         AddCommandListener("say_team", OnSayListener, HookMode.Pre);
 
@@ -155,6 +150,27 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
                 };
             }
         }
+    }
+    public void OnPlayerButtonsChange(CCSPlayerController player, PlayerButtons oldButtons, PlayerButtons newButtons)
+    {
+        if (Config.Settings.UseOnTickForButtons)
+            return;
+
+        if (!Players.TryGetValue(player.Slot, out var menuPlayer) || menuPlayer.MainMenu == null)
+            return;
+
+        DateTime now = DateTime.Now;
+
+        if (newButtons != 0 && oldButtons != newButtons)
+        {
+            ButtonHoldState[player] = (newButtons, now, 0);
+            HandleButtonPress(menuPlayer, newButtons);
+        }
+        else if (newButtons == 0)
+        {
+            ButtonHoldState.TryRemove(player, out _);
+        }
+
     }
     public void OnTick()
     {
@@ -172,50 +188,55 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
                 player.UpdateCenterHtml();
             });
 
-            var controller = player.player!;
-
-            PlayerButtons currentButtons = controller.Buttons;
-
-            if (!ButtonHoldState.TryGetValue(controller, out var holdState))
+            if (Config.Settings.UseOnTickForButtons)
             {
-                holdState = ((PlayerButtons)0, DateTime.MinValue, 0);
-            }
+                var controller = player.player!;
 
-            bool buttonHandled = false;
+                PlayerButtons currentButtons = controller.Buttons;
 
-            if (currentButtons != 0)
-            {
-                if (holdState.Button != currentButtons)
+                if (!ButtonHoldState.TryGetValue(controller, out var holdState))
                 {
-                    ButtonHoldState[controller] = (currentButtons, now, 0);
-                    buttonHandled = HandleButtonPress(player, currentButtons);
+                    holdState = ((PlayerButtons)0, DateTime.MinValue, 0);
                 }
-                else
+
+                bool buttonHandled = false;
+
+                if (currentButtons != 0)
                 {
-                    double totalSeconds = (now - holdState.LastPress).TotalSeconds;
-                    if (totalSeconds >= InitialDelay)
+                    if (holdState.Button != currentButtons)
                     {
-                        int repeatCount = (int)((totalSeconds - InitialDelay) / RepeatDelay);
-                        if (repeatCount > holdState.RepeatCount)
+                        if (Config.Settings.UseOnTickForButtons)
                         {
+                            ButtonHoldState[controller] = (currentButtons, now, 0);
                             buttonHandled = HandleButtonPress(player, currentButtons);
-                            ButtonHoldState[controller] = (holdState.Button, holdState.LastPress, repeatCount);
+                        }
+                    }
+                    else
+                    {
+                        double totalSeconds = (now - holdState.LastPress).TotalSeconds;
+                        if (totalSeconds >= InitialDelay)
+                        {
+                            int repeatCount = (int)((totalSeconds - InitialDelay) / RepeatDelay);
+                            if (repeatCount > holdState.RepeatCount)
+                            {
+                                buttonHandled = HandleButtonPress(player, currentButtons);
+                                ButtonHoldState[controller] = (holdState.Button, holdState.LastPress, repeatCount);
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                ButtonHoldState.TryRemove(controller, out _);
-            }
+                else
+                {
+                    ButtonHoldState.TryRemove(controller, out _);
+                }
 
-            if (buttonHandled)
-            {
-                player.Buttons = currentButtons;
+                if (buttonHandled)
+                {
+                    player.Buttons = currentButtons;
+                }
             }
         }
     }
-
     private bool HandleButtonPress(T3MenuPlayer player, PlayerButtons button)
     {
         bool buttonHandled = false;
