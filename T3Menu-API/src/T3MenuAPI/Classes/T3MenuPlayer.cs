@@ -161,7 +161,6 @@ namespace T3MenuAPI
                     }
                 }
             }
-
             Server.NextFrame(() =>
             {
                 UpdateCenterHtml();
