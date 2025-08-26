@@ -354,7 +354,6 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     {
         if (player == null)
             return HookResult.Continue;
-
         var menuPlayer = Players.Values.FirstOrDefault(p => p.player == player);
         if (menuPlayer == null || !menuPlayer.InputMode || menuPlayer.CurrentInputOption == null)
             return HookResult.Continue;
