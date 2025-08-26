@@ -165,7 +165,9 @@ jobs:
         cat << EOF > changelog.md
         ## What's Changed in ${{ steps.version.outputs.VERSION }}
         
-        $CHANGELOG
+        - feat: added OnPlayerButtonChange listener (3b5faea)
+        - feat: going back from submenu now sends you to last selected option of parentMenu (855a0c5)
+        - feat: added UseOnTickForButtons boolean in config (432c09f)
         
         ## Installation Instructions
         
