@@ -2,6 +2,7 @@
 **/obj
 **/bin
 Release/
-BuildOutput/
 *.zip
+# Note: BuildOutput/ is included in commits for releases
+# BuildOutput/
 *.dll
