@@ -22,7 +22,6 @@ namespace T3MenuAPI
         public string LeftBracket { get; set; } = "]";
         public string RightBracket { get; set; } = "[";
     }
-
     public class Menu_Buttons
     {
         public string ScrollUpButton { get; set; } = "W";
