@@ -21,4 +21,5 @@ public interface IT3Menu
     public void AddTextOption(string display, bool selectable = false);
     public void Close(CCSPlayerController player);
     public void OverrideButton(string button, string newButton);
+    public void OverrideControlInfo(string control, string newControlInfo);
 }
