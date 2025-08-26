@@ -22,7 +22,7 @@ namespace T3MenuAPI
         public int VisibleOptions = 4;
         public static IStringLocalizer? Localizer = null;
         public PlayerButtons Buttons { get; set; }
-        private float oldVelocitiyModifier;
+        private readonly Dictionary<IT3Menu, LinkedListNode<IT3Option>?> _lastSelectedOptions = new();
 
         public void OpenMainMenu(T3Menu? menu)
         {
@@ -65,6 +65,9 @@ namespace T3MenuAPI
                 return;
             }
 
+            if (CurrentMenu != null && CurrentChoice != null)
+                _lastSelectedOptions[CurrentMenu] = CurrentChoice;
+
             CurrentMenu = menu;
             VisibleOptions = string.IsNullOrEmpty(menu.Title) ? 5 : 4;
 
@@ -101,7 +104,6 @@ namespace T3MenuAPI
         {
             if (CurrentMenu == null || CurrentMenu == MainMenu)
             {
-                CloseAllSubMenus();
                 return;
             }
 
@@ -115,15 +117,56 @@ namespace T3MenuAPI
                 parentMenu = MainMenu;
             }
 
+            if (parentMenu == null)
+                return;
+
+            LinkedListNode<IT3Option>? lastSelected = null;
+            if (_lastSelectedOptions.TryGetValue(parentMenu, out lastSelected))
+            {
+                if (lastSelected == null || !parentMenu.Options.Contains(lastSelected.Value) || !IsSelectable(lastSelected.Value))
+                {
+                    lastSelected = FindFirstSelectableOption(parentMenu.Options);
+                }
+            }
+            else
+            {
+                lastSelected = FindFirstSelectableOption(parentMenu.Options);
+            }
+
             CurrentMenu = parentMenu;
 
-            MenuStart = CurrentMenu?.Options.First;
+            if (parentMenu == MainMenu)
+            {
+                VisibleOptions = 4;
+            }
+            else
+            {
+                VisibleOptions = string.IsNullOrEmpty(parentMenu.Title) ? 5 : 4;
+            }
 
-            CurrentChoice = FindFirstSelectableOption(CurrentMenu?.Options);
+            MenuStart = parentMenu.Options.First;
+            CurrentChoice = lastSelected;
 
-            UpdateCenterHtml();
+            if (CurrentChoice != null)
+            {
+                int selectedIndex = GetIndex(CurrentChoice);
+
+                if (selectedIndex >= VisibleOptions)
+                {
+                    int targetStart = Math.Max(0, selectedIndex - (VisibleOptions / 2));
+                    MenuStart = parentMenu.Options.First;
+                    for (int i = 0; i < targetStart && MenuStart?.Next != null; i++)
+                    {
+                        MenuStart = MenuStart.Next;
+                    }
+                }
+            }
+
+            Server.NextFrame(() =>
+            {
+                UpdateCenterHtml();
+            });
         }
-
         public void CloseAllSubMenus()
         {
             if (MainMenu == null)
@@ -147,6 +190,8 @@ namespace T3MenuAPI
             CurrentChoice = null;
             MenuStart = null;
             CenterHtml = "";
+
+            _lastSelectedOptions.Clear();
 
             if (player != null)
             {
@@ -179,6 +224,10 @@ namespace T3MenuAPI
         public void ScrollUp()
         {
             if (CurrentMenu == null || CurrentChoice == null)
+                return;
+
+            int selectableCount = CurrentMenu.Options.Count(opt => IsSelectable(opt));
+            if (selectableCount <= 1)
                 return;
 
             int oldStartIndex = GetIndex(MenuStart);
@@ -234,6 +283,10 @@ namespace T3MenuAPI
         public void ScrollDown()
         {
             if (CurrentMenu == null || CurrentChoice == null)
+                return;
+
+            int selectableCount = CurrentMenu.Options.Count(opt => IsSelectable(opt));
+            if (selectableCount <= 1)
                 return;
 
             int oldStartIndex = GetIndex(MenuStart);
