@@ -19,6 +19,7 @@ public class T3Menu : IT3Menu
     public bool showDeveloper { get; set; } = true;
     public Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
     public Dictionary<string, string> ButtonOverrides { get; set; } = new();
+    public Dictionary<string, string> ControlInfoOverrides { get; set; } = new();
     public int LastSelectedIndex { get; set; } = 0;
     public LinkedListNode<IT3Option> AddOption(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false)
     {
@@ -165,6 +166,10 @@ public class T3Menu : IT3Menu
     {
         ButtonOverrides[button] = newButton;
     }
+    public void OverrideControlInfo(string control, string newControlText)
+    {
+        ControlInfoOverrides[control] = newControlText;
+    }
     public string GetEffectiveButton(string buttonType)
     {
         if (ButtonOverrides.TryGetValue(buttonType, out string? overriddenButton))
@@ -182,6 +187,26 @@ public class T3Menu : IT3Menu
             "SlideRightButton" => Instance.Config.Buttons.SlideRightButton,
             "ExitButton" => Instance.Config.Buttons.ExitButton,
             _ => Instance.Config.Buttons.SelectButton
+        };
+    }
+    public string GetEffectiveControlInfo(string controlType)
+    {
+        if (ControlInfoOverrides.TryGetValue(controlType, out string? overriddenControl))
+        {
+            return overriddenControl;
+        }
+
+        return controlType switch
+        {
+            "Move" => Instance.Config.Controls.Move,
+            "Select" => Instance.Config.Controls.Select,
+            "Back" => Instance.Config.Controls.Back,
+            "Exit" => Instance.Config.Controls.Exit,
+            "LeftArrow" => Instance.Config.Controls.LeftArrow,
+            "RightArrow" => Instance.Config.Controls.RightArrow,
+            "LeftBracket" => Instance.Config.Controls.LeftBracket,
+            "RightBracket" => Instance.Config.Controls.RightBracket,
+            _ => Instance.Config.Controls.Select
         };
     }
 }
