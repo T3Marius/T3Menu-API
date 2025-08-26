@@ -175,7 +175,7 @@ jobs:
            - \`addons/counterstrikesharp/plugins/T3Menu-API/\` (plugin files)
            - \`addons/counterstrikesharp/shared/T3MenuSharedAPI/\` (shared API files)
            - \`addons/counterstrikesharp/configs/plugins/T3Menu-API/\` (configuration files)
-        4. Restart your CounterStrike server
+        4. Restart your CounterStrikeSharp server
         
         ## For Developers
         
