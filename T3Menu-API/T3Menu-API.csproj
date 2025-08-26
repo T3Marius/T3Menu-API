@@ -13,13 +13,6 @@
 		<DebugType>none</DebugType>
 	</PropertyGroup>
 
-
-	<ItemGroup>
-		<Reference Include="CounterStrikeSharp.API">
-			<HintPath>CounterStrikeSharp.API.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\T3MenuShared\T3MenuSharedAPI.csproj" />
 		<Content Include="T3Menu-API.toml">

@@ -3,6 +3,3 @@
 **/bin
 Release/
 *.zip
-# Note: BuildOutput/ is included in commits for releases
-# BuildOutput/
-*.dll
