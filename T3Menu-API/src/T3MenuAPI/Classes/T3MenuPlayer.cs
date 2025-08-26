@@ -556,17 +556,20 @@ namespace T3MenuAPI
                 builder.AppendLine("<br>");
             }
 
-            string controlsInfo;
-            if (CurrentMenu.IsSubMenu)
+            if (CurrentMenu != null && CurrentMenu is T3Menu menu)
             {
-                controlsInfo = $"<font color='#ff3333' class='fontSize-sm'>Select: <font color='#f5a142'>{Instance.Config.Controls.Select} <font color='#FFFFFF'>| <font color='#ff3333' class='fontSize-m'>Back: <font color='#f5a142'>{Instance.Config.Controls.Back} <font color='#FFFFFF'>| <font color='#ff3333'>Exit: <font color='#f5a142'>{Instance.Config.Controls.Exit}</font><br>";
-            }
-            else
-            {
-                controlsInfo = $"<font color='#ff3333' class='fontSize-sm'>Move: <font color='#f5a142'>{Instance.Config.Controls.Move} <font color='#FFFFFF'>| <font color='#ff3333' class='fontSize-m'>Select: <font color='#f5a142'>{Instance.Config.Controls.Select} <font color='#FFFFFF'>| <font color='#ff3333'>Exit: <font color='#f5a142'>{Instance.Config.Controls.Exit}</font><br>";
+                string controlsInfo;
+                if (menu.IsSubMenu)
+                {
+                    controlsInfo = $"<font color='#ff3333' class='fontSize-sm'>Select: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Select")} <font color='#FFFFFF'>| <font color='#ff3333' class='fontSize-m'>Back: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Back")} <font color='#FFFFFF'>| <font color='#ff3333'>Exit: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Exit")}</font><br>";
+                }
+                else
+                {
+                    controlsInfo = $"<font color='#ff3333' class='fontSize-sm'>Move: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Move")} <font color='#FFFFFF'>| <font color='#ff3333' class='fontSize-m'>Select: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Select")} <font color='#FFFFFF'>| <font color='#ff3333'>Exit: <font color='#f5a142'>{menu.GetEffectiveControlInfo("Exit")}</font><br>";
+                }
+                builder.Append(controlsInfo);
             }
 
-            builder.Append(controlsInfo);
             player.PrintToCenterHtml(builder.ToString());
         }
         private void UpdateSliderOptionText(StringBuilder builder, LinkedListNode<IT3Option> current, string color)
@@ -644,7 +647,13 @@ namespace T3MenuAPI
         }
         private bool IsSelectable(IT3Option option)
         {
-            return option != null && !option.IsDisabled && option.Type != OptionType.Text;
+            if (option == null || option.IsDisabled)
+                return false;
+
+            if (option.Type == OptionType.Text)
+                return !option.IsDisabled;
+
+            return true;
         }
     }
 
