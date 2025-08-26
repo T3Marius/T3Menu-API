@@ -112,7 +112,11 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             if (@event.Userid != null)
             {
                 Players.Remove(@event.Userid.Slot);
-                _playerSavedSpeed.Remove(@event.Userid);
+                if (_playerSavedSpeed.ContainsKey(@event.Userid))
+                    _playerSavedSpeed.Remove(@event.Userid);
+
+                if (_frozenPlayers.Contains(@event.Userid))
+                    _frozenPlayers.Remove(@event.Userid);
             }
             return HookResult.Continue;
         });
@@ -216,45 +220,114 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     {
         bool buttonHandled = false;
 
-        if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollUpButton, out var scrollUpButton) && (button & scrollUpButton) != 0)
-        {
-            player.ScrollUp();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollDownButton, out var scrollDownButton) && (button & scrollDownButton) != 0)
-        {
-            player.ScrollDown();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideLeftButton, out var slideLeftButton) && (button & slideLeftButton) != 0)
-        {
-            player.SlideLeft();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideRightButton, out var slideRightButton) && (button & slideRightButton) != 0)
-        {
-            player.SlideRight();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SelectButton, out var selectButton) && (button & selectButton) != 0)
-        {
-            player.Choose();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.BackButton, out var backButton) && (button & backButton) != 0)
-        {
-            player.CloseSubMenu();
-            buttonHandled = true;
-        }
-        else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ExitButton, out var exitButton) && (button & exitButton) != 0)
-        {
-            Server.NextFrame(() =>
-            {
-                player.Close();
-            });
-            buttonHandled = true;
-        }
+        var currentMenu = player.MainMenu;
 
+        if (currentMenu != null && currentMenu is T3Menu menu)
+        {
+            string scrollUpBtn = menu.GetEffectiveButton("ScrollUpButton");
+            string scrollDownBtn = menu.GetEffectiveButton("ScrollDownButton");
+            string slideLeftBtn = menu.GetEffectiveButton("SlideLeftButton");
+            string slideRightBtn = menu.GetEffectiveButton("SlideRightButton");
+            string selectBtn = menu.GetEffectiveButton("SelectButton");
+            string backBtn = menu.GetEffectiveButton("BackButton");
+            string exitBtn = menu.GetEffectiveButton("ExitButton");
+
+            if (Buttons.ButtonMapping.TryGetValue(scrollUpBtn, out var scrollUpButton) && (button & scrollUpButton) != 0)
+            {
+                player.ScrollUp();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(scrollDownBtn, out var scrollDownButton) && (button & scrollDownButton) != 0)
+            {
+                player.ScrollDown();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(slideLeftBtn, out var slideLeftButton) && (button & slideLeftButton) != 0)
+            {
+                player.SlideLeft();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(slideRightBtn, out var slideRightButton) && (button & slideRightButton) != 0)
+            {
+                player.SlideRight();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(selectBtn, out var selectButton) && (button & selectButton) != 0)
+            {
+                player.Choose();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(backBtn, out var backButton) && (button & backButton) != 0)
+            {
+                player.CloseSubMenu();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(exitBtn, out var exitButton) && (button & exitButton) != 0)
+            {
+                if (player.player == null)
+                {
+                    Instance.Logger.LogError("Player menu is null");
+                    return false;
+                }
+                GetMenuManager().InvokeMenuClose(player.player, menu);
+                Server.NextFrame(() =>
+                {
+                    player.Close();
+                });
+                buttonHandled = true;
+            }
+
+        }
+        else
+        {
+
+            if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollUpButton, out var scrollUpButton) && (button & scrollUpButton) != 0)
+            {
+                player.ScrollUp();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ScrollDownButton, out var scrollDownButton) && (button & scrollDownButton) != 0)
+            {
+                player.ScrollDown();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideLeftButton, out var slideLeftButton) && (button & slideLeftButton) != 0)
+            {
+                player.SlideLeft();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SlideRightButton, out var slideRightButton) && (button & slideRightButton) != 0)
+            {
+                player.SlideRight();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.SelectButton, out var selectButton) && (button & selectButton) != 0)
+            {
+                player.Choose();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.BackButton, out var backButton) && (button & backButton) != 0)
+            {
+                player.CloseSubMenu();
+                buttonHandled = true;
+            }
+            else if (Buttons.ButtonMapping.TryGetValue(Config.Buttons.ExitButton, out var exitButton) && (button & exitButton) != 0)
+            {
+                if (player.player == null || currentMenu == null)
+                {
+                    Logger.LogError("Player menu is null.");
+                    return false;
+                }
+
+                GetMenuManager().InvokeMenuClose(player.player, currentMenu);
+
+                Server.NextFrame(() =>
+                {
+                    player.Close();
+                });
+                buttonHandled = true;
+            }
+        }
         return buttonHandled;
     }
     public HookResult OnSayListener(CCSPlayerController? player, CommandInfo command)
@@ -265,13 +338,13 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         if (menuPlayer == null || !menuPlayer.InputMode || menuPlayer.CurrentInputOption == null)
             return HookResult.Continue;
 
-        if (MenuManager.GetActiveMenu(player) != null)
+        if (menuPlayer.MainMenu != null)
         {
             string input = command.ArgString;
             if (string.IsNullOrWhiteSpace(input))
                 return HookResult.Handled;
 
-            if (input.Contains("cancel", StringComparison.OrdinalIgnoreCase))
+            if (input.Equals("cancel", StringComparison.OrdinalIgnoreCase))
             {
                 menuPlayer.InputMode = false;
                 menuPlayer.CurrentInputOption = null;

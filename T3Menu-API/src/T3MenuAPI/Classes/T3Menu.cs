@@ -18,6 +18,7 @@ public class T3Menu : IT3Menu
     public bool IsExitable { get; set; } = true;
     public bool showDeveloper { get; set; } = true;
     public Action<CCSPlayerController, IT3Option, int>? OnSlide { get; set; }
+    public Dictionary<string, string> ButtonOverrides { get; set; } = new();
     public int LastSelectedIndex { get; set; } = 0;
     public LinkedListNode<IT3Option> AddOption(string display, Action<CCSPlayerController, IT3Option> onChoice, bool isDisabled = false)
     {
@@ -159,5 +160,28 @@ public class T3Menu : IT3Menu
         };
 
         Options.AddLast(newTextOption);
+    }
+    public void OverrideButton(string button, string newButton)
+    {
+        ButtonOverrides[button] = newButton;
+    }
+    public string GetEffectiveButton(string buttonType)
+    {
+        if (ButtonOverrides.TryGetValue(buttonType, out string? overriddenButton))
+        {
+            return overriddenButton;
+        }
+
+        return buttonType switch
+        {
+            "ScrollUpButton" => Instance.Config.Buttons.ScrollUpButton,
+            "ScrollDownButton" => Instance.Config.Buttons.ScrollDownButton,
+            "SelectButton" => Instance.Config.Buttons.SelectButton,
+            "BackButton" => Instance.Config.Buttons.BackButton,
+            "SlideLeftButton" => Instance.Config.Buttons.SlideLeftButton,
+            "SlideRightButton" => Instance.Config.Buttons.SlideRightButton,
+            "ExitButton" => Instance.Config.Buttons.ExitButton,
+            _ => Instance.Config.Buttons.SelectButton
+        };
     }
 }

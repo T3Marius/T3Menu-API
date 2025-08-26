@@ -20,4 +20,5 @@ public interface IT3Menu
     public LinkedListNode<IT3Option> AddSliderOption(string display, List<object> values, object? defaultValue = null, int displayItems = 3, Action<CCSPlayerController, IT3Option, int>? onSlide = null);
     public void AddTextOption(string display, bool selectable = false);
     public void Close(CCSPlayerController player);
+    public void OverrideButton(string button, string newButton);
 }
