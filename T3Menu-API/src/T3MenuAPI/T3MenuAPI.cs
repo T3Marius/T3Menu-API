@@ -352,7 +352,8 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
     }
     public HookResult OnSayListener(CCSPlayerController? player, CommandInfo command)
     {
-        if (player == null) return HookResult.Continue;
+        if (player == null)
+            return HookResult.Continue;
 
         var menuPlayer = Players.Values.FirstOrDefault(p => p.player == player);
         if (menuPlayer == null || !menuPlayer.InputMode || menuPlayer.CurrentInputOption == null)
