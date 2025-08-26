@@ -24,17 +24,34 @@ jobs:
       with:
         dotnet-version: '8.0.x'
         
-    - name: Restore dependencies
+    - name: Verify build artifacts exist
       run: |
-        dotnet restore T3MenuShared/T3MenuSharedAPI.csproj
-        dotnet restore T3Menu-API/T3Menu-API.csproj
-        dotnet restore MenuExample/MenuExample.csproj
-      
-    - name: Build solution
-      run: |
-        dotnet build T3MenuShared/T3MenuSharedAPI.csproj --configuration Release --no-restore
-        dotnet build T3Menu-API/T3Menu-API.csproj --configuration Release --no-restore
-        dotnet build MenuExample/MenuExample.csproj --configuration Release --no-restore
+        echo "Checking for pre-built artifacts in BuildOutput directory..."
+        
+        # Check if BuildOutput directory exists and has content
+        if [ ! -d "BuildOutput" ]; then
+          echo "ERROR: BuildOutput directory not found!"
+          echo "Please run 'dotnet build' locally before creating a release."
+          exit 1
+        fi
+        
+        # Check for main plugin files
+        if [ ! -d "BuildOutput/plugins/T3Menu-API" ] || [ ! "$(ls -A BuildOutput/plugins/T3Menu-API 2>/dev/null)" ]; then
+          echo "ERROR: T3Menu-API plugin build output not found!"
+          echo "Please run 'dotnet build T3Menu-API/T3Menu-API.csproj --configuration Release' locally."
+          exit 1
+        fi
+        
+        # Check for shared API files
+        if [ ! -d "BuildOutput/shared/T3MenuSharedAPI" ] || [ ! "$(ls -A BuildOutput/shared/T3MenuSharedAPI 2>/dev/null)" ]; then
+          echo "ERROR: T3MenuSharedAPI build output not found!"
+          echo "Please run 'dotnet build T3MenuShared/T3MenuSharedAPI.csproj --configuration Release' locally."
+          exit 1
+        fi
+        
+        echo "✅ All required build artifacts found!"
+        echo "BuildOutput structure:"
+        find BuildOutput -type f
       
     - name: Create build artifacts
       run: |
@@ -77,7 +94,7 @@ jobs:
         fi
         
         # Copy MenuExample build output (for developers who want to see example usage)
-        if [ -d "MenuExample/bin/Release/net8.0" ] && [ "$(ls -A MenuExample/bin/Release/net8.0)" ]; then
+        if [ -d "MenuExample/bin/Release/net8.0" ] && [ "$(ls -A MenuExample/bin/Release/net8.0 2>/dev/null)" ]; then
           echo "Copying MenuExample build output..."
           mkdir -p release-artifacts/examples/MenuExample
           cp -r MenuExample/bin/Release/net8.0/* release-artifacts/examples/MenuExample/
