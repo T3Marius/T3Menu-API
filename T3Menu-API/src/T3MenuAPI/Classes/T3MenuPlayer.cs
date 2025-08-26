@@ -569,7 +569,6 @@ namespace T3MenuAPI
             builder.Append(controlsInfo);
             player.PrintToCenterHtml(builder.ToString());
         }
-
         private void UpdateSliderOptionText(StringBuilder builder, LinkedListNode<IT3Option> current, string color)
         {
             T3Option sliderOption = (T3Option)current.Value!;
