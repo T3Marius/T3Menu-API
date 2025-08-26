@@ -149,7 +149,10 @@ jobs:
         
         if [ -n "$LAST_TAG" ]; then
           echo "Found previous tag: $LAST_TAG"
-          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD)
+          echo "Getting commits between $LAST_TAG and $CURRENT_TAG"
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..$CURRENT_TAG)
+          echo "Generated changelog:"
+          echo "$CHANGELOG"
           COMPARE_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.version.outputs.VERSION }}"
         else
           echo "No previous tag found, this is the first release"
