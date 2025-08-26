@@ -203,7 +203,6 @@ namespace T3MenuAPI
                 }
             }
         }
-
         public void Choose()
         {
             if (player != null && CurrentChoice?.Value != null && !CurrentChoice.Value.IsDisabled)
@@ -219,7 +218,6 @@ namespace T3MenuAPI
 
             UpdateCenterHtml();
         }
-
         public void ScrollUp()
         {
             if (CurrentMenu == null || CurrentChoice == null)
@@ -279,7 +277,6 @@ namespace T3MenuAPI
                 UpdateCenterHtml();
             }
         }
-
         public void ScrollDown()
         {
             if (CurrentMenu == null || CurrentChoice == null)
