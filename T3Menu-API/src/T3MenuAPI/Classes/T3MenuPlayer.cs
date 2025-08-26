@@ -75,7 +75,7 @@ namespace T3MenuAPI
         }
         public void Close()
         {
-            if (MainMenu != null)
+            if (MainMenu != null && player != null)
             {
                 if (MainMenu.IsExitable)
                 {

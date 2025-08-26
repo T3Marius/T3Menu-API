@@ -9,6 +9,8 @@ namespace T3MenuAPI
     public class T3MenuManager : IT3MenuManager
     {
         public static readonly Dictionary<IntPtr, IT3MenuManager> ActiveMenus = new();
+        public event Action<CCSPlayerController, IT3Menu>? OnMenuClose;
+        public T3Menu menu = new T3Menu();
         private readonly Dictionary<CCSPlayerController, CounterStrikeSharp.API.Modules.Timers.Timer?> _refreshTimers = new();
         public void Refresh(float repeat, Action? onTick)
         {
@@ -124,7 +126,6 @@ namespace T3MenuAPI
                 timer.Kill();
                 _refreshTimers[player] = null;
             }
-
             Players[player.Slot].OpenMainMenu(null);
             ActiveMenus.Remove(player.Handle);
 
@@ -137,6 +138,7 @@ namespace T3MenuAPI
 
             if (ActiveMenus.TryGetValue(player.Handle, out var activeMenu))
             {
+
                 activeMenu.CloseMenu(player);
                 ActiveMenus.Remove(player.Handle);
             }
@@ -182,6 +184,11 @@ namespace T3MenuAPI
 
             };
             return menu;
+        }
+
+        public void InvokeMenuClose(CCSPlayerController player, IT3Menu menu)
+        {
+            OnMenuClose?.Invoke(player, menu);
         }
     }
 }
