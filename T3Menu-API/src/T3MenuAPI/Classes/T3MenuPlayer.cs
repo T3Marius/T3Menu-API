@@ -229,6 +229,7 @@ namespace T3MenuAPI
             if (selectableCount <= 1)
                 return;
 
+
             int oldStartIndex = GetIndex(MenuStart);
             var prevSelectable = FindPreviousSelectableOption(CurrentChoice);
 
