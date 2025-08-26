@@ -6,6 +6,7 @@ namespace T3MenuAPI
 {
     public class MenuConfig : BasePluginConfig
     {
+
         public Controls_Info Controls { get; set; } = new Controls_Info();
         public Menu_Buttons Buttons { get; set; } = new Menu_Buttons();
         public Menu_Sounds Sounds { get; set; } = new Menu_Sounds();
