@@ -163,7 +163,7 @@ SoundEventFiles = []  # if you have custom sounds, add the soundeventfile path h
 [Settings]
 ShowDeveloperInfo = true
 ```
-All buttons the menu have.
+# All buttons the menu have.
 ```toml
 Alt1
 Alt2
