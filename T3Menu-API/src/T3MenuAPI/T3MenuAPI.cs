@@ -391,7 +391,6 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 
                 menuPlayer.UpdateCenterHtml();
             }
-
             return HookResult.Handled;
         }
 
