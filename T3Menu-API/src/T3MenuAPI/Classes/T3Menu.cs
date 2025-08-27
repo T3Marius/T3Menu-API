@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using T3MenuAPI;
 using T3MenuSharedApi;
@@ -195,7 +196,6 @@ public class T3Menu : IT3Menu
         {
             return overriddenControl;
         }
-
         return controlType switch
         {
             "Move" => Instance.Config.Controls.Move,

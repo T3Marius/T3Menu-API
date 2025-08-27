@@ -338,13 +338,13 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
                     Logger.LogError("Player menu is null.");
                     return false;
                 }
-
                 GetMenuManager().InvokeMenuClose(player.player, currentMenu);
 
                 Server.NextFrame(() =>
                 {
                     player.Close();
                 });
+
                 buttonHandled = true;
             }
         }

@@ -43,11 +43,11 @@ namespace T3MenuAPI
                 ActiveMenus[player] = menu;
             }
 
-            if (player != null && Instance.Config.Settings.FreezePlayer)
+            if (player != null && (Instance.Config.Settings.FreezePlayer || menu.FreezePlayer))
             {
                 player.Freeze();
-                System.Console.WriteLine("Freeze player called");
             }
+
             Server.NextFrame(() =>
             {
                 UpdateCenterHtml();
@@ -514,7 +514,6 @@ namespace T3MenuAPI
                 }
                 else if (current.Value?.Type == OptionType.Bool || current.Value?.Type == OptionType.Button)
                 {
-                    // Handle Button (default) and Bool types with MaxOptionLenght
                     if (current == CurrentChoice)
                     {
                         builder.Append($"<b><font color='yellow'>{rightArrow}{rightBracket}</font> <font color='{color}' class='fontSize-m'>{optionDisplay.TruncateHtml(CurrentMenu.MaxOptionLenght)}</font> <font color='yellow'>{leftBracket}{leftArrow}</font></b>");
