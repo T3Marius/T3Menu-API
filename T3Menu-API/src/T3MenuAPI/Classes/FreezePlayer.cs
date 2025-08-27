@@ -28,8 +28,11 @@ public static class Library
 
         if (_playerSavedSpeed.TryGetValue(player, out float originalSpeed))
         {
-            player.PlayerPawn.Value.VelocityModifier = originalSpeed;
-            _playerSavedSpeed.Remove(player);
+            Server.NextFrame(() =>
+            {
+                player.PlayerPawn.Value.VelocityModifier = originalSpeed;
+                _playerSavedSpeed.Remove(player);
+            });
         }
     }
     public static void UpdateFrozenPlayers()
