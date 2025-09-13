@@ -125,7 +125,8 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             {
                 if (ActiveMenus.TryGetValue(player, out var activeMenu))
                 {
-                    if (activeMenu.FreezePlayer)
+                    bool shouldFreeze = activeMenu.FreezePlayer ?? Instance.Config.Settings.FreezePlayer;
+                    if (shouldFreeze)
                     {
                         player.Freeze();
                     }
@@ -184,7 +185,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
         {
             Server.NextFrame(() =>
             {
-                player.UpdateCenterHtml();
+                player.UpdateT3CenterHtml();
             });
 
             if (Config.Settings.UseOnTickForButtons)
@@ -367,7 +368,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             {
                 menuPlayer.InputMode = false;
                 menuPlayer.CurrentInputOption = null;
-                menuPlayer.UpdateCenterHtml();
+                menuPlayer.UpdateT3CenterHtml();
                 return HookResult.Handled;
             }
 
@@ -387,7 +388,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
                 menuPlayer.InputMode = false;
                 menuPlayer.CurrentInputOption = null;
 
-                menuPlayer.UpdateCenterHtml();
+                menuPlayer.UpdateT3CenterHtml();
             }
             return HookResult.Handled;
         }

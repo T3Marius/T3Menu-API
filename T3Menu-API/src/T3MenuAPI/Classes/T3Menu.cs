@@ -12,9 +12,10 @@ public class T3Menu : IT3Menu
     public int MaxOptionLenght { get; set; } = Instance.Config.Settings.MaxOptionLenght;
     public LinkedList<IT3Option> Options { get; set; } = new();
     public LinkedList<IT3Option>? Prev { get; set; } = null;
-    public bool FreezePlayer { get; set; } = true;
+    public bool? FreezePlayer { get; set; } = null;
     public bool HasSound { get; set; } = true;
     public IT3Menu? ParentMenu { get; set; } = null;
+    public MenuType MenuType { get; set; } = MenuType.CenterHtml;
     public bool IsSubMenu { get; set; } = false;
     public bool IsExitable { get; set; } = true;
     public bool showDeveloper { get; set; } = true;

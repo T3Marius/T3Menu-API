@@ -24,6 +24,7 @@ namespace T3MenuAPI
         public PlayerButtons Buttons { get; set; }
         private readonly Dictionary<IT3Menu, LinkedListNode<IT3Option>?> _lastSelectedOptions = new();
 
+
         public void OpenMainMenu(T3Menu? menu)
         {
             if (menu == null)
@@ -43,14 +44,23 @@ namespace T3MenuAPI
                 ActiveMenus[player] = menu;
             }
 
-            if (player != null && (Instance.Config.Settings.FreezePlayer || menu.FreezePlayer))
+            if (player != null)
             {
-                player.Freeze();
+                bool shouldFreeze = menu.FreezePlayer ?? Instance.Config.Settings.FreezePlayer;
+                if (shouldFreeze)
+                {
+                    player.Freeze();
+                }
+                else
+                {
+                    player.Unfreeze();
+                }
             }
+
 
             Server.NextFrame(() =>
             {
-                UpdateCenterHtml();
+                UpdateT3CenterHtml();
             });
         }
 
@@ -61,7 +71,7 @@ namespace T3MenuAPI
                 CurrentMenu = MainMenu;
                 MenuStart = MainMenu?.Options.First;
                 CurrentChoice = FindFirstSelectableOption(MainMenu?.Options);
-                UpdateCenterHtml();
+                UpdateT3CenterHtml();
                 return;
             }
 
@@ -74,7 +84,7 @@ namespace T3MenuAPI
             MenuStart = menu.Options.First;
             CurrentChoice = FindFirstSelectableOption(menu.Options);
 
-            UpdateCenterHtml();
+            UpdateT3CenterHtml();
         }
         public void Close()
         {
@@ -163,7 +173,7 @@ namespace T3MenuAPI
             }
             Server.NextFrame(() =>
             {
-                UpdateCenterHtml();
+                UpdateT3CenterHtml();
             });
         }
         public void CloseAllSubMenus()
@@ -176,7 +186,7 @@ namespace T3MenuAPI
             MenuStart = MainMenu.Options.First;
             VisibleOptions = 4;
 
-            UpdateCenterHtml();
+            UpdateT3CenterHtml();
         }
 
         public void CloseMenu()
@@ -216,7 +226,7 @@ namespace T3MenuAPI
                 CurrentChoice.Value.OnChoose.Invoke(player, CurrentChoice.Value);
             }
 
-            UpdateCenterHtml();
+            UpdateT3CenterHtml();
         }
         public void ScrollUp()
         {
@@ -274,7 +284,7 @@ namespace T3MenuAPI
                         player.EmitSound(Instance.Config.Sounds.ScrollUp, filter, Instance.Config.Sounds.Volume);
                     }
                 }
-                UpdateCenterHtml();
+                UpdateT3CenterHtml();
             }
         }
         public void ScrollDown()
@@ -332,7 +342,7 @@ namespace T3MenuAPI
                         player.EmitSound(Instance.Config.Sounds.ScrollDown, filter, Instance.Config.Sounds.Volume);
                     }
                 }
-                UpdateCenterHtml();
+                UpdateT3CenterHtml();
             }
         }
         public void SlideLeft()
@@ -365,7 +375,7 @@ namespace T3MenuAPI
                 player.EmitSound(Instance.Config.Sounds.SlideLeft, filter, Instance.Config.Sounds.Volume);
             }
 
-            UpdateCenterHtml();
+            UpdateT3CenterHtml();
         }
         public void SlideRight()
         {
@@ -397,7 +407,7 @@ namespace T3MenuAPI
                 player.EmitSound(Instance.Config.Sounds.SlideLeft, filter, Instance.Config.Sounds.Volume);
             }
 
-            UpdateCenterHtml();
+            UpdateT3CenterHtml();
         }
         private LinkedListNode<IT3Option>? FindNextSelectableOption(LinkedListNode<IT3Option> current)
         {
@@ -446,7 +456,7 @@ namespace T3MenuAPI
 
             return current;
         }
-        public void UpdateCenterHtml()
+        public void UpdateT3CenterHtml()
         {
             if (player == null || CurrentMenu == null)
             {

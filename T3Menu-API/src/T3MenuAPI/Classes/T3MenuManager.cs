@@ -93,7 +93,7 @@ namespace T3MenuAPI
                 return;
             }
 
-            Players[player.Slot].UpdateCenterHtml();
+            Players[player.Slot].UpdateT3CenterHtml();
         }
 
         public void OpenMainMenu(CCSPlayerController? player, IT3Menu? menu)
@@ -115,7 +115,6 @@ namespace T3MenuAPI
                 ActiveMenus.Remove(player.Handle);
             }
         }
-
         public void CloseMenu(CCSPlayerController? player)
         {
             if (player == null)
@@ -130,7 +129,6 @@ namespace T3MenuAPI
             ActiveMenus.Remove(player.Handle);
 
         }
-
         public void CloseActiveMenu(CCSPlayerController? player)
         {
             if (player == null)

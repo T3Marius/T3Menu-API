@@ -18,7 +18,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+      with:
+        fetch-depth: 0  # Fetch complete git history for proper changelog generation
+        
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -127,38 +129,46 @@ jobs:
         CURRENT_TAG="${{ steps.version.outputs.VERSION }}"
         echo "Current tag: $CURRENT_TAG"
         
-        # Fetch all tags to ensure we have the complete list
-        git fetch --tags --force
+        # Get all tags sorted by version, then reverse to get oldest first, then filter out the current one
+        # and take the last one (which would be the immediate previous tag)
+        PREVIOUS_TAG=$(git tag --sort=-version:refname | awk '{if (!($0~/'"${CURRENT_TAG}"'/)) print;}' | head -n 1)
+
+        echo "Previous tag: $PREVIOUS_TAG"
         
-        # Get all tags sorted by version in descending order, excluding the current tag
-        ALL_TAGS=$(git tag -l | grep -v "^${CURRENT_TAG}$" | sort -V -r)
-        echo "All tags (excluding current): $ALL_TAGS"
-        
-        # Get the most recent tag (first in the list after excluding current)
-        LAST_TAG=$(echo "$ALL_TAGS" | head -n 1)
-        
-        echo "Previous tag found: $LAST_TAG"
-        
-        if [ -n "$LAST_TAG" ]; then
-          echo "Found previous tag: $LAST_TAG"
-          echo "Getting commits between $LAST_TAG and $CURRENT_TAG"
-          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..$CURRENT_TAG)
-          echo "Generated changelog:"
-          echo "$CHANGELOG"
-          COMPARE_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.version.outputs.VERSION }}"
+        COMMITS_TO_SHOW=""
+        COMPARE_LINK=""
+
+        if [ -n "$PREVIOUS_TAG" ]; then
+          echo "Generating changelog between $PREVIOUS_TAG and $CURRENT_TAG"
+          # Get all non-merge commits between PREVIOUS_TAG and CURRENT_TAG
+          COMMITS_TO_SHOW=$(git log --pretty=format:"- %s (%h)" --no-merges $PREVIOUS_TAG..$CURRENT_TAG)
+          COMPARE_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...$CURRENT_TAG"
         else
-          echo "No previous tag found, this is the first release"
-          # First release - get all commits
-          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+          echo "No previous tag found - generating changelog for all commits up to $CURRENT_TAG"
+          # First release - get all commits up to the current tag, reversed for chronological order
+          COMMITS_TO_SHOW=$(git log --pretty=format:"- %s (%h)" --no-merges --reverse $CURRENT_TAG)
           COMPARE_LINK="**Initial Release** 🎉"
         fi
         
-        # Write changelog to file with only what's changed
+        # If COMMITS_TO_SHOW is empty after trying to get commits between tags,
+        # it means the tags might point to the same commit or there are no new commits.
+        # In such a case, we can show the current tag's commit message itself.
+        if [ -z "$COMMITS_TO_SHOW" ]; then
+          echo "No new commits found between tags or this is the first tag. Showing current tag's commit message."
+          COMMITS_TO_SHOW=$(git log --pretty=format:"- %s (%h)" -1 $CURRENT_TAG)
+        fi
+
+        # Create changelog file
         cat << EOF > changelog.md
-        ## What's Changed in ${{ steps.version.outputs.VERSION }}
+        ## What's Changed in $CURRENT_TAG
         
-        $CHANGELOG
+        $COMMITS_TO_SHOW
+        
+        $COMPARE_LINK
         EOF
+        
+        echo "Generated changelog:"
+        cat changelog.md
         
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

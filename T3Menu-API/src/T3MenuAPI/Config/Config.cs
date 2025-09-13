@@ -44,6 +44,7 @@ namespace T3MenuAPI
     }
     public class Config_Settings
     {
+        public string MenuType { get; set; } = "";
         public bool UseOnTickForButtons { get; set; } = true;
         public bool FreezePlayer { get; set; } = true;
         public bool ShowDeveloperInfo { get; set; } = true;
