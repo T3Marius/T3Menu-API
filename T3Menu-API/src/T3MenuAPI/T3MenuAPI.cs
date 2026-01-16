@@ -152,6 +152,12 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
             }
         }
     }
+
+    public override void OnAllPluginsLoaded(bool hotReload)
+    {
+        RemoveListener<OnTick>(OnTick);
+        RegisterListener<OnTick>(OnTick);
+    }
     public void OnPlayerButtonsChange(CCSPlayerController player, PlayerButtons oldButtons, PlayerButtons newButtons)
     {
         if (Config.Settings.UseOnTickForButtons)
@@ -183,10 +189,7 @@ public class T3MenuAPI : BasePlugin, IPluginConfig<MenuConfig>
 
         foreach (var player in Players.Values.Where(p => p.MainMenu != null))
         {
-            Server.NextFrame(() =>
-            {
-                player.UpdateT3CenterHtml();
-            });
+            player.UpdateT3CenterHtml();
 
             if (Config.Settings.UseOnTickForButtons)
             {
